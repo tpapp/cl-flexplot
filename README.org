@@ -1,0 +1,5 @@
+* cl-flexplot
+
+** The LaTeX package
+
+put in =~/texmf=, using a symlink, TODO explain this
