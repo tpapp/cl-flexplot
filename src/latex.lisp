@@ -118,7 +118,9 @@
 (defgeneric emit-value (value)
   (:documentation "Emit value to *OUTPUT* in a format understood by LaTeX.")
   (:method ((value real))
-    (format *output* "~A" (float value 1.0))))
+    (format *output* "~A" (float value 1.0)))
+  (:method ((string string))
+    (princ string *output*)))
 
 (defun generate-code (ops)
   (map 'list #'op->code ops))

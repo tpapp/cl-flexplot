@@ -85,8 +85,8 @@ with scales.  Return (list center left bottom right top)."
   (let+ ((#2A((&ign left &ign)
               (bottom center top)
               (&ign right &ign)) (split frame
-                                       (list left (spacer) right)
-                                       (list  bottom (spacer) top))))
+                                       (list left (flex-spacer) right)
+                                       (list  bottom (flex-spacer) top))))
     (list center left bottom right top)))
 
 (defun split-h (frame divisions)
@@ -116,8 +116,8 @@ corresponds to the frame with the given orientation, the second value is the
 other frame."
   (flet ((split% (horizontal? first?)
            (let+ ((division (if first?
-                           (list division (spacer))
-                           (list (spacer) division)))
+                           (list division (flex-spacer))
+                           (list (flex-spacer) division)))
                   (#(first second) (if horizontal?
                                        (split-h frame division)
                                        (split-v frame division))))
@@ -135,10 +135,21 @@ other frame."
 (defgeneric project (mapping point)
   (:documentation ""))
 
+(defun center (mapping)
+  (project mapping (point 0.5 0.5)))
+
 (defmethod project ((frame frame) (point point))
   (let+ (((&frame-r/o left right bottom top) frame)
          ((&point x y) point))
     (point (flex-project left right x) (flex-project bottom top y))))
+
+
+
+
+
+(defgeneric render (frame object)
+  (:documentation "Render OBJECT in FRAME, usually by emitting the appropriate
+  PGF commands using the PGF- functions."))
 
 ;; (defmacro with-clip-to-frame (frame &body body)
 ;;   `(pdf:with-saved-state

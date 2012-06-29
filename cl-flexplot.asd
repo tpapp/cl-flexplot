@@ -7,10 +7,12 @@
                #:cl-fad
                #:cl-num-utils
                #:external-program
+               #:fare-mop
+               #:iterate
                #:let-plus)
   :serial t
   :components
-  ((:module "base"
+  ((:module "low-level"
     :pathname #P"src/"
     :serial t
     :components
@@ -18,14 +20,16 @@
      (:file "latex")
      (:file "flex")
      (:file "pgf")
-     (:file "orientation")
-     (:file "frame")
      (:file "external")))
    (:module "plot"
+    :pathname #P"src/"
     :serial t
     :components
-    ((:file "margin")
-     (:file "drawing-area")))
+    ((:file "orientation")
+     (:file "margin")
+     (:file "frame")
+     (:file "drawing-area")
+     (:file "axis")))
    (:module "misc"
     :pathname #P"src/"
     :serial t

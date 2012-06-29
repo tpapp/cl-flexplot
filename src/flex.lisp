@@ -63,8 +63,9 @@
   (let+ (((&flex a-rel a-abs) a)
          ((&flex b-rel b-abs) b)
          ((&flex p-rel p-abs) point)
-         ((&flet combine (a b) (+ (* a p-rel) (* b (1c p-rel))))))
-    (flex (combine a-rel b-rel) (+ (combine a-abs b-abs) p-abs))))
+         ((&flet combine (a b) (+ (* a (1c p-rel)) (* b p-rel)))))
+    (flex (combine a-rel b-rel)
+          (+ (combine a-abs b-abs) p-abs))))
 
 (defun flex-apply (function &rest arguments)
   (flex (apply function (mapcar #'rel-part arguments))

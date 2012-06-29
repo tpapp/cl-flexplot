@@ -50,3 +50,17 @@
       (loop for v from 2 to 9 by (/ 2)
             do (pgf-lines (mapcar #'project
                                   (list (point -1 v) (point 1 v))))))))
+
+(with-displayed-picture ()
+  (let+ (((center left bottom right top) (split5 +unit-frame+
+                                                 (flex-spacer (flex 1/4 60))
+                                                 (flex-spacer (flex 1/4 40))))
+         (s-left (generate-scale :left (axis "left") (interval -2 3)))
+         (s-bottom (generate-scale :bottom (axis "bottom") (interval -7 1)))
+         (s-right (generate-scale :right (axis "right") (interval 0 9)))
+         (s-top (generate-scale :top (axis "top") (interval -2 3))))
+    (random-tint center)
+    (render left s-left)
+    (render right s-right)
+    (render bottom s-bottom)
+    (render top s-top)))

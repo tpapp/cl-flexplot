@@ -4,18 +4,20 @@
 
 (defun pgf-text-align-string (align)
   "Return a string for valid text alignment options."
+  ;; Note: PGF's align orientation is the exact opposite of what this library
+  ;; uses.
   (ecase align
-    (:left "left")
-    (:right "right")
+    (:left "right")
+    (:right "left")
     (:base "base")
-    (:base-left "base,left")
-    (:base-right "base,right")
-    (:top "top")
-    (:top-left "top,left")
-    (:top-right "top,right")
-    (:bottom "bottom")
-    (:bottom-left "bottom,left")
-    (:bottom-right "bottom,right")))
+    (:base-left "base,right")
+    (:base-right "base,left")
+    (:top "bottom")
+    (:top-left "bottom,right")
+    (:top-right "bottom,left")
+    (:bottom "top")
+    (:bottom-left "top,right")
+    (:bottom-right "top,left")))
 
 (defun pgf-text (position text &key align rotate)
   (latex
@@ -24,7 +26,8 @@
                 (when rotate
                   (latex ",rotate=" rotate))
                 (when align
-                  (latex "," (pgf-text-align-string align))))
+                  (let ((align-string (pgf-text-align-string align)))
+                    (latex "," align-string))))
               text)
     :/))
 
@@ -40,9 +43,20 @@
 (defun pgf-stroke ()
   (latex (:pgfusepath "stroke") :/))
 
+(defun pgf-set-color (color)
+  (let+ (((&rgb red green blue) (as-rgb color)))
+    (latex (:pgfsys@color@rgb red green blue))))
+
 (defun pgf-set-fill-color (color)
   (let+ (((&rgb red green blue) (as-rgb color)))
     (latex (:pgfsys@color@rgb@fill red green blue))))
+
+(defun pgf-set-stroke-color (color)
+  (let+ (((&rgb red green blue) (as-rgb color)))
+    (latex (:pgfsys@color@rgb@stroke red green blue))))
+
+(defun pgf-set-line-width (width)
+  (latex (:pgfsetlinewidth (latex width "pt"))))
 
 (defun pgf-fill ()
   (latex (:pgfusepath "fill") :/))
