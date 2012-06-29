@@ -4,10 +4,7 @@
 
 (defun unit-bounding-box ()
   (pgf-reset-bounding-box)
-  (pgf-rectangle (flex-point (flex-coordinate 0 0)
-                             (flex-coordinate 0 0))
-                 (flex-point (flex-coordinate 1 0)
-                             (flex-coordinate 1 0)))
+  (pgf-frame-rectangle +unit-frame+)
   (pgf-use-as-bounding-box))
 
 (defmacro with-output ((filespec &key (if-exists :supersede)) &body body)
@@ -21,7 +18,8 @@
                                 &body body)
   `(with-output (,filespec :if-exists ,if-exists)
      ,@body
-     (unit-bounding-box)))
+     (unit-bounding-box)
+     ))
 
 (defparameter *latex-header*
   "\\documentclass[a4paper,12pt]{article}

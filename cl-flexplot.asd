@@ -8,10 +8,10 @@
                #:cl-num-utils
                #:external-program
                #:let-plus)
-  :pathname #P"src/"
   :serial t
   :components
   ((:module "base"
+    :pathname #P"src/"
     :serial t
     :components
     ((:file "package")
@@ -19,12 +19,15 @@
      (:file "flex")
      (:file "pgf")
      (:file "orientation")
-     (:file "frame")))
+     (:file "frame")
+     (:file "external")))
    (:module "plot"
     :serial t
     :components
-    ((:file "axis")))
+    ((:file "margin")
+     (:file "drawing-area")))
    (:module "misc"
+    :pathname #P"src/"
     :serial t
     :components
     ((:file "debug")))))

@@ -20,10 +20,9 @@ one visually."
   (:documentation "Tint object (usually a frame or a collection of frames with
   a random color.  Return the original object.  Useful for debugging.")
   (:method ((frame frame))
-    (let+ (((&frame-r/o left right bottom top) frame))
-      (pgf-rectangle (flex-point left bottom) (flex-point right top))
-      (pgf-set-fill-color (random-color))
-      (pgf-fill))
+    (pgf-frame-rectangle frame)
+    (pgf-set-fill-color (random-color))
+    (pgf-fill)
     frame)
   (:method ((array array))
     (map nil #'random-tint (flatten-array array))

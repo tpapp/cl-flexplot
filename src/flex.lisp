@@ -5,59 +5,79 @@
 ;;; FIXME documentation
 ;;; FIXME weed out unused functions
 
+;;; coordinates
+;;;
+;;; FLEXs have a /relative/ and an /absolute/ component.  REALs are
+;;; interpreted as a relative coordinate with a 0 absolute component.
+
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (defstruct (flex-coordinate
-              (:constructor flex-coordinate (relative absolute)))
+  (defstruct (flex (:constructor flex (relative absolute)))
     (relative nil :type real :read-only t)
     (absolute nil :type real :read-only t)))
 
-(define-constant +flex-coordinate-zero+ (flex-coordinate 0 0)
-  :test #'equalp)
+(deftype coordinate ()
+  "Coordinate type used in the CL-FLEXPLOT library."
+  '(or real flex))
 
-(defun flex-coordinate-apply (function &rest arguments)
-  (flex-coordinate (apply function (mapcar #'flex-coordinate-relative arguments))
-                   (apply function (mapcar #'flex-coordinate-absolute arguments))))
+(defgeneric rel-part (coordinate)
+  (:documentation "Return the absolute part of a coordinate.")
+  (:method ((flex flex))
+    (flex-relative flex))
+  (:method ((real real))
+    real))
 
-(defstruct (flex-point (:constructor flex-point (x y)))
-  (x nil :type flex-coordinate)
-  (y nil :type flex-coordinate))
+(defgeneric abs-part (coordinate)
+  (:documentation "Return the absolute part of a coordinate.")
+  (:method ((flex flex))
+    (flex-absolute flex))
+  (:method ((real real))
+    0))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
+  (define-let+-expansion (&flex (rel abs) :value-var value :body-var body)
+    "LET+ clause for FLEX coordinates, also accepting reals."
+    `(let ((,rel (rel-part ,value))
+           (,abs (abs-part ,value)))
+       ,@body)))
 
-  (define-structure-let+ (flex-coordinate) relative absolute)
+(define-constant +flex-zero+ (flex 0 0) :test #'equalp)
 
-  (define-let+-expansion (&flex-point ((x-a x-r) (y-a y-r))
-                             :value-var value :body-var body)
-    (with-unique-names (x y)
-      `(let+ (((&structure-r/o flex-point- (,x x) (,y y)) ,value)
-              ((&flex-coordinate-r/o ,x-r ,x-a) ,x)
-              ((&flex-coordinate-r/o ,y-r ,y-a) ,y))
-         ,@body))))
+(defun flex+ (flex &rest other)
+  (let+ (((&flex rel abs) flex))
+    (mapc (lambda+ ((&flex r a))
+            (incf rel r)
+            (incf abs a))
+          other)
+    (flex rel abs)))
 
-(defmethod emit-value ((flex-point flex-point))
-  (let+ (((&flex-point (x-a x-r) (y-a y-r)) flex-point))
+(defun flex- (flex &rest other)
+  (let+ (((&flex rel abs) flex))
+    (mapc (lambda+ ((&flex r a))
+            (decf rel r)
+            (decf abs a))
+          other)
+    (flex rel abs)))
+
+(defun flex-project (a b point)
+  "Map POINT to between the coordinates A and B."
+  (let+ (((&flex a-rel a-abs) a)
+         ((&flex b-rel b-abs) b)
+         ((&flex p-rel p-abs) point)
+         ((&flet combine (a b) (+ (* a p-rel) (* b (1c p-rel))))))
+    (flex (combine a-rel b-rel) (+ (combine a-abs b-abs) p-abs))))
+
+(defun flex-apply (function &rest arguments)
+  (flex (apply function (mapcar #'rel-part arguments))
+        (apply function (mapcar #'abs-part arguments))))
+
+
+(defstruct (point (:constructor point (x y)))
+  (x nil :type coordinate)
+  (y nil :type coordinate))
+
+(define-structure-let+ (point) x y)
+
+(defmethod emit-value ((point point))
+  (let+ (((&point-r/o (&flex x-r x-a) (&flex y-r y-a)) point))
     (latex
       (:cc x-r x-a y-r y-a))))
-
-(defgeneric flex-plus (a b)
-  (:method ((a flex-coordinate) (b flex-coordinate))
-    (flex-coordinate-apply #'+ a b)))
-
-(defun flex+ (object &rest objects)
-  "Add flexible coordinate objects."
-  (reduce #'flex-plus (cons object objects)))
-
-(defgeneric flex-minus (a b)
-  (:method ((a flex-coordinate) (b flex-coordinate))
-    (flex-coordinate-apply #'- a b)))
-
-(defun flex- (object &rest objects)
-  "Subtract flexible coordinate objects."
-  (reduce #'flex-minus (cons object objects)))
-
-(defun flex-convex-combination (a b u)
-  "A*U+B*(1-U)."
-  (let+ (((&flex-coordinate a-rel a-abs) a)
-         ((&flex-coordinate b-rel b-abs) b)
-         ((&flet combine (a b) (+ (* a u) (* b (1c u))))))
-    (flex-coordinate (combine a-rel b-rel) (combine a-abs b-abs))))

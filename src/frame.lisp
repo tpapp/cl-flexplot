@@ -8,22 +8,22 @@
 
 (defstruct (flex-spacer
             (:constructor flex-spacer (&optional (coordinate
-                                                  (flex-coordinate 1 1)))))
-  (coordinate nil :type flex-coordinate))
+                                                  (flex 1 1)))))
+  (coordinate nil :type coordinate))
 
 (defun split-flex-interval (lower upper divisions)
-  (let ((spacer +flex-coordinate-zero+)
-        (non-spacer +flex-coordinate-zero+))
+  (let ((spacer +flex-zero+)
+        (non-spacer +flex-zero+))
     (map 'nil
          (lambda (division)
-           (aetypecase division
+           (atypecase division
              (flex-spacer
               (setf spacer (flex+ spacer (flex-spacer-coordinate it))))
-             (flex-coordinate
+             (t
               (setf non-spacer (flex+ non-spacer it)))))
          divisions)
     (let* ((remaining (flex- upper lower non-spacer))
-           (spacer-scale (flex-coordinate-apply
+           (spacer-scale (flex-apply
                           (lambda (spacer remaining)
                             (if (plusp spacer)
                                 (/ remaining spacer)
@@ -33,11 +33,11 @@
       (map 'vector
            (lambda (division)
              (let* ((division
-                      (aetypecase division
+                      (atypecase division
                         (flex-spacer
-                         (flex-coordinate-apply #'* spacer-scale
-                                                (flex-spacer-coordinate it)))
-                        (flex-coordinate it)))
+                         (flex-apply #'* spacer-scale
+                                     (flex-spacer-coordinate it)))
+                        (t it)))
                     (upper (flex+ lower division)))
                (aprog1 (list lower upper)
                  (setf lower upper))))
@@ -47,7 +47,7 @@
   (aref
    (split-flex-interval lower upper
                         (list lower-padding
-                              (flex-spacer (flex-coordinate 1 1))
+                              (flex-spacer)
                               upper-padding))
    1))
 
@@ -56,18 +56,19 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defstruct (frame
               (:constructor frame (left right bottom top)))
-    (left nil :type flex-coordinate)
-    (right nil :type flex-coordinate)
-    (bottom nil :type flex-coordinate)
-    (top nil :type flex-coordinate)))
+    (left nil :type coordinate)
+    (right nil :type coordinate)
+    (bottom nil :type coordinate)
+    (top nil :type coordinate)))
 
-(define-constant +unit-frame+ (frame (flex-coordinate 0 0)
-                                     (flex-coordinate 1 0)
-                                     (flex-coordinate 0 0)
-                                     (flex-coordinate 1 0))
+(define-constant +unit-frame+ (frame 0 1 0 1)
   :test #'equalp)
 
 (define-structure-let+ (frame) left right bottom top)
+
+(defun pgf-frame-rectangle (frame)
+  (let+ (((&frame-r/o left right bottom top) frame))
+    (pgf-rectangle (point left bottom) (point right top))))
 
 (defun split (frame h-divisions v-divisions)
     "Split FRAME into a grid defined by the division sequences (see
@@ -129,21 +130,15 @@ other frame."
       (:left (split% t t))
       (:right (split% t nil)))))
 
-(defstruct (uv (:constructor uv (u v)))
-  "Structure for representing coordinates within a frame, normalized to
-[0,1]²."
-  (u nil :type (real 0 1))
-  (v nil :type (real 0 1)))
+
 
-(define-structure-let+ (uv) u v)
+(defgeneric project (mapping point)
+  (:documentation ""))
 
-(defun frame-coordinates (frame uv)
-  "Map unit coordinates to coordiantes withi FRAME."
+(defmethod project ((frame frame) (point point))
   (let+ (((&frame-r/o left right bottom top) frame)
-         ((&uv u v) uv))
-    (flex-point (flex-convex-combination left right u)
-                (flex-convex-combination bottom top v))))
-
+         ((&point x y) point))
+    (point (flex-project left right x) (flex-project bottom top y))))
 
 ;; (defmacro with-clip-to-frame (frame &body body)
 ;;   `(pdf:with-saved-state

@@ -26,3 +26,28 @@ orientations."
     (:right :left)
     (:top :bottom)
     (:bottom :top)))
+
+(defstruct (orientation-dependent
+            (:constructor orientation-dependent (left bottom
+                                                 &key (right left) (top bottom))))
+  "Container for quantities that depend on orientation."
+  (left nil :read-only t)
+  (bottom nil :read-only t)
+  (right nil :read-only t)
+  (top nil :read-only t))
+
+(defgeneric orientation (orientation object)
+  (:documentation "Return an orientation-dependent value of object.  If the
+  object is not orientation-dependent, it is returned as is.")
+  (:method (orientation object)
+    (check-type orientation orientation)
+    object)
+  (:method (orientation (object orientation-dependent))
+    (let+ (((&structure-r/o orientation-dependent- left bottom right top)
+            object))
+      (check-type orientation orientation)
+      (ecase orientation
+        (:left left)
+        (:bottom bottom)
+        (:right right)
+        (:top top)))))
