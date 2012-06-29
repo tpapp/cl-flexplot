@@ -2,12 +2,26 @@
 
 (in-package #:cl-flexplot)
 
+(defun unit-bounding-box ()
+  (pgf-reset-bounding-box)
+  (pgf-rectangle (flex-point (flex-coordinate 0 0)
+                             (flex-coordinate 0 0))
+                 (flex-point (flex-coordinate 1 0)
+                             (flex-coordinate 1 0)))
+  (pgf-use-as-bounding-box))
+
 (defmacro with-output ((filespec &key (if-exists :supersede)) &body body)
   `(with-open-file (*output* ,filespec
                              :direction :output
                              :if-exists ,if-exists
                              :if-does-not-exist :create)
      ,@body))
+
+(defmacro with-flexplot-output ((filespec &key (if-exists :supersede))
+                                &body body)
+  `(with-output (,filespec :if-exists ,if-exists)
+     ,@body
+     (unit-bounding-box)))
 
 (defparameter *latex-header*
   "\\documentclass[a4paper,12pt]{article}
@@ -115,7 +129,7 @@ exist.  If it encounters existing files for MAXIMUM-TRIES, signal an error."
   (once-only (path)
     (with-unique-names (pdf-path)
       `(progn
-         (with-output (,path)
+         (with-flexplot-output (,path)
            ,@body)
          (write-latex-wrapper ,wrapper-filespec ,path)
          (let ((,pdf-path (compile-latex ,wrapper-filespec)))

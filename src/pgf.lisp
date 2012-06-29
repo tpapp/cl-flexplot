@@ -47,5 +47,8 @@
 (defun pgf-fill ()
   (latex (:pgfusepath "fill") :/))
 
-(defun pgf-fill ()
-  (latex (:pgfusepath "fill") :/))
+(defun pgf-reset-bounding-box ()
+  (latex (:pgfresetboundingbox) :/))
+
+(defun pgf-use-as-bounding-box ()
+  (latex (:pgfusepath "use as bounding box") :/))

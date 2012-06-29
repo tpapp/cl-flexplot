@@ -7,7 +7,8 @@
 ;;; coordinate interval splitting
 
 (defstruct (flex-spacer
-            (:constructor flex-spacer (coordinate)))
+            (:constructor flex-spacer (&optional (coordinate
+                                                  (flex-coordinate 1 1)))))
   (coordinate nil :type flex-coordinate))
 
 (defun split-flex-interval (lower upper divisions)
@@ -29,24 +30,26 @@
                                 (prog1 0 ; will never be used
                                   (assert (zerop remaining)))))
                           spacer remaining)))
-      (map 'list
+      (map 'vector
            (lambda (division)
-             (let* ((division (aetypecase division
-                                (flex-spacer (flex-coordinate-apply #'*
-                                                                    spacer-scale
-                                                                    (flex-spacer-coordinate it)))
-                                (flex-coordinate it)))
+             (let* ((division
+                      (aetypecase division
+                        (flex-spacer
+                         (flex-coordinate-apply #'* spacer-scale
+                                                (flex-spacer-coordinate it)))
+                        (flex-coordinate it)))
                     (upper (flex+ lower division)))
                (aprog1 (list lower upper)
                  (setf lower upper))))
            divisions))))
 
 (defun shrink-flex-interval (lower upper lower-padding upper-padding)
-  (second
+  (aref
    (split-flex-interval lower upper
                         (list lower-padding
                               (flex-spacer (flex-coordinate 1 1))
-                              upper-padding))))
+                              upper-padding))
+   1))
 
 ;;;
 
@@ -72,7 +75,8 @@ SPLIT-FLEX-INTERVAL for semantics), returning a matrix."
   (let+ (((&frame-r/o left right bottom top) frame))
     (outer* (split-flex-interval left right h-divisions)
             (split-flex-interval bottom top v-divisions)
-            (curry #'apply #'frame))))
+            (lambda+ ((left right) (bottom top))
+              (frame left right bottom top)))))
 
 (defun split5 (frame left bottom &optional (right left) (top bottom))
   "Split FRAME into a center and the four adjacent regions.  Useful for plots
@@ -87,21 +91,23 @@ with scales.  Return (list center left bottom right top)."
 (defun split-h (frame divisions)
   "Split FRAME horizontally, returning a vector.  See SPLIT."
   (let+ (((&frame-r/o left right bottom top) frame))
-    (map 'vector (rcurry #'apply (list bottom top))
+    (map 'vector (lambda+ ((left right))
+                   (frame left right bottom top))
          (split-flex-interval left right divisions))))
 
 (defun split-v (frame divisions)
   "Split FRAME vertically, returning a vector.  See SPLIT."
   (let+ (((&frame-r/o left right bottom top) frame))
-    (map 'vector (curry #'apply (list left right))
+    (map 'vector (lambda+ ((bottom top))
+                   (frame left right bottom top))
          (split-flex-interval bottom top divisions))))
 
 (defun shrink (frame left &optional (bottom left) (right left) (top bottom))
   "Shrink FRAME.  Arguments can be relative terms."
-  (let+ (((&frame-r/o left% right% bottom% top%) frame))
-    (apply #'frame
-           (shrink-flex-interval left% right% left right)
-           (shrink-flex-interval bottom% top% bottom top))))
+  (let+ (((&frame-r/o left% right% bottom% top%) frame)
+         ((left right) (shrink-flex-interval left% right% left right))
+         ((bottom top) (shrink-flex-interval bottom% top% bottom top)))
+    (frame left right bottom top)))
 
 (defun split2 (frame orientation division)
   "Split FRAME in two, according to ORIENTATION.  The first value returned
