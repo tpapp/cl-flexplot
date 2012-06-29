@@ -28,11 +28,11 @@
               text)
     :/))
 
-(defun pgf-move-to (position)
-  (latex (:pgfmoveto position) :/))
+(defun pgf-path-move-to (position)
+  (latex (:pgfpathmoveto position) :/))
 
-(defun pgf-line-to (position)
-  (latex (:pgflineto position) :/))
+(defun pgf-path-line-to (position)
+  (latex (:pgfpathlineto position) :/))
 
 (defun pgf-rectangle (corner1 corner2)
   (latex (:pgfpathrectanglecorners corner1 corner2) :/))
@@ -52,3 +52,25 @@
 
 (defun pgf-use-as-bounding-box ()
   (latex (:pgfusepath "use as bounding box") :/))
+
+
+;;; convenience functions
+
+(defun pgf-lines (points)
+  "Stroke consecutive points.  NIL breaks the line."
+  (let+ (open?
+         ((&flet ensure-closed ()
+            (when open?
+              (pgf-stroke)
+              (setf open? nil)))))
+    (map nil (lambda (point)
+               (if point
+                   (if open?
+                       (pgf-path-line-to point)
+                       (progn
+                         (pgf-path-move-to point)
+                         (setf open? t)))
+                   (ensure-closed)))
+         points)
+    (ensure-closed))
+  (values))

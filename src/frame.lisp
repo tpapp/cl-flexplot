@@ -129,6 +129,22 @@ other frame."
       (:left (split% t t))
       (:right (split% t nil)))))
 
+(defstruct (uv (:constructor uv (u v)))
+  "Structure for representing coordinates within a frame, normalized to
+[0,1]²."
+  (u nil :type (real 0 1))
+  (v nil :type (real 0 1)))
+
+(define-structure-let+ (uv) u v)
+
+(defun frame-coordinates (frame uv)
+  "Map unit coordinates to coordiantes withi FRAME."
+  (let+ (((&frame-r/o left right bottom top) frame)
+         ((&uv u v) uv))
+    (flex-point (flex-convex-combination left right u)
+                (flex-convex-combination bottom top v))))
+
+
 ;; (defmacro with-clip-to-frame (frame &body body)
 ;;   `(pdf:with-saved-state
 ;;      (%rectangle ,frame)

@@ -54,3 +54,10 @@
 (defun flex- (object &rest objects)
   "Subtract flexible coordinate objects."
   (reduce #'flex-minus (cons object objects)))
+
+(defun flex-convex-combination (a b u)
+  "A*U+B*(1-U)."
+  (let+ (((&flex-coordinate a-rel a-abs) a)
+         ((&flex-coordinate b-rel b-abs) b)
+         ((&flet combine (a b) (+ (* a u) (* b (1c u))))))
+    (flex-coordinate (combine a-rel b-rel) (combine a-abs b-abs))))
