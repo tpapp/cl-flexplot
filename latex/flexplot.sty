@@ -11,7 +11,7 @@
   {\pgfpointscale{##1}{\pgfpoint{\ax}{0}}}%
   {\pgfpointscale{##2}{\pgfpoint{0}{\ay}}}}%
 \newcommand{\ac}[2]{\pgfpoint{##1pt}{##2pt}}%
-\newcommand{\cc}[4]{\pgfpointadd{\rc{##1}{##3}}{\ac{##2}{##4}}}
+\newcommand{\cc}[4]{\pgfpointadd{\rc{##1}{##3}}{\ac{##2}{##4}}}%
 \begin{pgfpicture}%
 \makeatletter%
 \input{#3}%
