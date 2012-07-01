@@ -370,11 +370,12 @@ RATIONAL is rounded to an integer and printed as one. "
 (defun axis-annotation (position digits-after-decimal)
   "Return an object suitable for displaying as an axis annotation.
 DIGITS-AFTER-DECIMAL gives the number of digits after the decimal point."
-  (atypecase position
-    (rational (format-rational it digits-after-decimal))
-    (t (if (plusp digits-after-decimal)
-           (format nil "~,vf" digits-after-decimal position)
-           (format nil "~d" position)))))
+  (format nil "\\flexaxisannotation{~A}"
+          (atypecase position
+            (rational (format-rational it digits-after-decimal))
+            (t (if (plusp digits-after-decimal)
+                   (format nil "~,vf" digits-after-decimal position)
+                   (format nil "~d" position))))))
 
 (defun digits-after-decimal (rational)
   "Return the digits after the decimal point for a rational number."
