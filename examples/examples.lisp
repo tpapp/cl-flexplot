@@ -52,6 +52,11 @@
                                   (list (point -1 v) (point 1 v))))))))
 
 (with-displayed-picture ()
+  (let+ ((p (flex 0 10))
+         (l (split5 +unit-frame+ p p)))
+    (random-tint l)))
+
+(with-displayed-picture ()
   (let+ (((center left bottom right top) (split5 +unit-frame+
                                                  (flex-spacer (flex 1/4 60))
                                                  (flex-spacer (flex 1/4 40))))
@@ -60,7 +65,13 @@
          (s-right (generate-scale :right (axis "right") (interval 0 9)))
          (s-top (generate-scale :top (axis "top") (interval -2 3))))
     (random-tint center)
-    (render left s-left)
-    (render right s-right)
-    (render bottom s-bottom)
-    (render top s-top)))
+    (render-with-orientation left s-left :left)
+    (render-with-orientation right s-right :right)
+    (render-with-orientation bottom s-bottom :bottom)
+    (render-with-orientation top s-top :top)))
+
+(with-displayed-picture ()
+  (render +unit-frame+
+          (plot
+           (lines (list (point 0 0)
+                        (point 1 1))))))
