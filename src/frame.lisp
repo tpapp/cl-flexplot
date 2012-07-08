@@ -130,6 +130,30 @@ other frame."
       (:left (split% t t))
       (:right (split% t nil)))))
 
+(defun replace-h (frame replacement-frame)
+  "Return a new FRAME, taking horizontal coordinates from REPLACEMENT-FRAME
+and the rest from FRAME."
+  (if replacement-frame
+      (let+ (((&frame-r/o &ign &ign bottom top) frame)
+             ((&frame-r/o left right &ign &ign) replacement-frame))
+
+        (frame left right bottom top))
+      frame))
+
+(defun replace-v (frame replacement-frame)
+  "Return a new FRAME, taking vertical coordinates from REPLACEMENT-FRAME and
+the rest from FRAME."
+  (if replacement-frame
+      (let+ (((&frame-r/o left right &ign &ign) frame)
+             ((&frame-r/o &ign &ign bottom top) replacement-frame))
+        (frame left right bottom top))
+      frame))
+
+(defun replace-with-orientation (orientation frame replacement-frame)
+  (if (o-horizontal? orientation)
+      (replace-h frame replacement-frame)
+      (replace-v frame replacement-frame)))
+
 
 
 (defgeneric project (mapping point)
@@ -151,12 +175,14 @@ other frame."
   (:documentation "Render OBJECT in FRAME, usually by emitting the appropriate
   PGF commands using the PGF- functions."))
 
-;; (defmacro with-clip-to-frame (frame &body body)
-;;   `(pdf:with-saved-state
-;;      (%rectangle ,frame)
-;;      (pdf:clip-path)
-;;      (pdf:end-path-no-op)
-;;      ,@body))
+(defmacro with-clip-to-frame (frame &body body)
+  `(progn
+    ,@body)
+#+nil  `(pdf:with-saved-state
+     (%rectangle ,frame)
+     (pdf:clip-path)
+     (pdf:end-path-no-op)
+     ,@body))
 
 ;; (defgeneric %random-tint (object)
 ;;   (:documentation "Tint object (usually a frame or a collection of frames with

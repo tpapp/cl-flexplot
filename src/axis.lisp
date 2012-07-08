@@ -22,7 +22,7 @@
    (size :initarg :size :initform 12)
    (color :initarg :color :initform +black+)))
 
-(defparameter *default-title-margin* 20
+(defparameter *default-title-margin* (flex 0 20)
   "Default margin for titles.")
 
 (defgeneric title (object &key &allow-other-keys)
@@ -34,17 +34,6 @@
     (make-instance 'title :string "" :margin 0))
   (:method ((title title) &key)
     title))
-
-;;; FIXME this generic function is probably not needed, use something for the title only
-;;; eg render-title
-(defmethod render-in-side (orientation frame (title title))
-  (let+ (((&slots-r/o string color) title))
-    (pgf-set-fill-color color)         ; FIXME this probably won't affect text
-    (pgf-text (center frame) string
-              :rotate (ecase orientation
-                        ((:top :bottom) 0)
-                        (:left 90)
-                        (:right 270)))))
 
 (defclass title-mixin (simple-print-object-mixin)
   ((title :initarg :title :initform nil))
@@ -59,8 +48,20 @@ title."))
 (defmethod title ((object title-mixin) &key)
   (slot-value object 'title))
 
-(defmethod margin + (orientation (object title-mixin))
-  (margin orientation (slot-value object 'title)))
+(defmethod margin (orientation (object title-mixin))
+  (flex+ (margin orientation (slot-value object 'title))
+         (margin orientation object)))
+
+(defmethod render-with-orientation (orientation frame (title title))
+  (let+ (((&slots-r/o string color) title))
+    (unless string
+      (return-from render-with-orientation))
+    (pgf-set-fill-color color)         ; FIXME this probably won't affect text
+    (pgf-text (center frame) string
+              :rotate (ecase orientation
+                        ((:top :bottom) 0)
+                        (:left 90)
+                        (:right 270)))))
 
 ;;; axis
 
@@ -85,12 +86,13 @@ title."))
   (:method ((function null) interval)
     interval))
 
-(defparameter *axis-margin* (orientation-dependent 45 25)
+(defparameter *axis-margin* (orientation-dependent (flex 0 45) (flex 0 35))
   "Default decoration margin for axes.")
 
-(defparameter *axis-mark-length* 3 "Length of tickmarks.")
+(defparameter *axis-mark-length* (absolute 3)
+  "Length of tickmarks.")
 
-(defparameter *axis-annotation-distance* 6
+(defparameter *axis-annotation-distance* (absolute 6)
   "Distance of annotation from axis line.")
 
 (defparameter *axis-marks-number* 7
@@ -158,8 +160,7 @@ rest."))
 ;;; FIXME documentation
 
 (defclass scale (simple-print-object-mixin)
-  ((orientation :initarg :orientation)
-   (projection :initarg :projection :reader projection)
+  ((projection :initarg :projection :reader projection)
    (ticks :initarg :ticks)
    (annotation-distance :initarg :annotation-distance))
   (:documentation "FIXME"))
@@ -167,28 +168,29 @@ rest."))
 (defparameter *scale-line-width* 0.5
   "Width of lines used when drainwg the tickmarks and the scale box.")
 
-(defmethod render (frame (scale scale))
-  (let+ (((&slots-r/o orientation projection ticks annotation-distance) scale)
+(defmethod render-with-orientation (orientation frame (scale scale))
+  (let+ (((&slots-r/o projection ticks annotation-distance) scale)
          ((&slots-r/o positions marks annotations) ticks)
          ((&flet p (parallel orthogonal)
             (project frame
                      (ecase orientation
-                       (:left (point (flex 1 (- orthogonal))
+                       (:left (point (flex- 1 orthogonal)
                                      (project projection parallel)))
-                       (:right (point (flex 0 orthogonal)
-                                     (project projection parallel)))
+                       (:right (point orthogonal
+                                      (project projection parallel)))
                        (:bottom (point (project projection parallel)
-                                       (flex 1 (- orthogonal))))
+                                       (flex- 1 orthogonal)))
                        (:top (point (project projection parallel)
-                                    (flex 0 orthogonal))))))))
+                                    orthogonal)))))))
     (pgf-set-line-width *scale-line-width*)
     (pgf-set-color +black+)
     (loop for position in positions
           for mark in marks
           for annotation in annotations
           do (pgf-lines (list (p position 0) (p position mark)))
-             (pgf-text (p position annotation-distance) annotation
-                       :align orientation))))
+             (when annotation
+               (pgf-text (p position annotation-distance) annotation
+                         :align orientation)))))
 
 (defun scale-frame (frame)
   "Draw the rectangle that scales lie on."
@@ -213,8 +215,7 @@ determines the "))
                                   axis interval))
            (domain (interval-hull (list interval
                                         (slot-value ticks 'positions)))))
-      (make-instance 'scale :orientation orientation
-                            :projection (make-coordinate-projection domain
+      (make-instance 'scale :projection (make-coordinate-projection domain
                                                                     :linear)
                             :ticks ticks
                             :annotation-distance (orientation orientation

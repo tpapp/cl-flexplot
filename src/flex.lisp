@@ -33,6 +33,9 @@
   (:method ((real real))
     0))
 
+(defun absolute (abs-part)
+  (flex 0 abs-part))
+
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (define-let+-expansion (&flex (rel abs) :value-var value :body-var body)
     "LET+ clause for FLEX coordinates, also accepting reals."
@@ -55,6 +58,14 @@
     (mapc (lambda+ ((&flex r a))
             (decf rel r)
             (decf abs a))
+          other)
+    (flex rel abs)))
+
+(defun flex-max (flex &rest other)
+  (let+ (((&flex rel abs) flex))
+    (mapc (lambda+ ((&flex r a))
+            (maxf rel r)
+            (maxf abs a))
           other)
     (flex rel abs)))
 

@@ -29,7 +29,14 @@
      (:file "margin")
      (:file "frame")
      (:file "drawing-area")
-     (:file "axis")))
+     (:file "bounding-box")
+     (:file "axis")
+     (:file "plot")))
+   (:module "objects"
+    :pathname #P"src/"
+    :serial t
+    :components
+    ((:file "simple-objects")))
    (:module "misc"
     :pathname #P"src/"
     :serial t
