@@ -60,20 +60,36 @@
       (w preamble)
       (format *output* body width height flexplot-namestring))))
 
+(define-condition latex-error (error)
+  ((code :initarg :code)
+   (log :initarg :log)))
+
+(defmethod print-object ((latex-error latex-error) stream)
+  (print-unreadable-object (latex-error stream :type t)
+    (let+ (((&slots-r/o code log) latex-error))
+      (format stream "status code ~A~2%" code)
+      (write-sequence log stream))))
+
 (defun compile-latex (pathname)
   "Given a pathname to a TEX file, call PDFLaTeX to compile the file (in the
 same directory).  If the compilation was successful, return the pathname of
 the PDF file, otherwise signal an error."
-  (let+ (((&values status code)
+  (let+ ((log-pathname (make-pathname :type "log" :defaults pathname))
+         ((&values status code)
           (external-program:run "pdflatex"
                                 (list "-output-directory"
                                       (directory-namestring pathname)
                                       (namestring pathname)))))
     (assert (eq status :exited))
-    (assert (zerop code) () "Error ~A when compiling file ~A." code
-            (namestring pathname))
-    (values (make-pathname :type "pdf" :defaults pathname)
-            (make-pathname :type "log" :defaults pathname))))
+    (assert (zerop code) ()
+            'latex-error
+            :code code
+            :log (with-open-file (stream log-pathname :direction :input)
+                   (let* ((length (file-length stream))
+                          (data (make-string length)))
+                     (read-sequence data stream)
+                     data)))
+    (make-pathname :type "pdf" :defaults pathname)))
 
 (defun display-pdf (pathname &key (pdf-server "cl-plotpro") (raise? t))
   "Display PDF by calling a PDF viewer."
