@@ -53,6 +53,10 @@
   (x-projection nil :read-only t)
   (y-projection nil :read-only t))
 
+(defmethod domain ((da drawing-area))
+  (let+ (((&structure-r/o drawing-area- x-projection y-projection) da))
+    (list (domain x-projection) (domain y-projection))))
+
 (defmacro with-drawing-area ((drawing-area project) &body body)
   (check-type project symbol)
   (once-only (drawing-area)

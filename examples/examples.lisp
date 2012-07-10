@@ -73,5 +73,9 @@
 (with-displayed-picture ()
   (render +unit-frame+
           (plot
-           (lines (list (point 0 0)
-                        (point 1 1))))))
+           (list
+            (lines (list (point 0.1 0)
+                         (point 1 1)))
+            (horizontal-guide 0.5)
+            (vertical-guide 0.2)
+            (diagonal-guide)))))

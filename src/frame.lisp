@@ -171,9 +171,11 @@ the rest from FRAME."
 
 
 
-(defgeneric render (frame object)
-  (:documentation "Render OBJECT in FRAME, usually by emitting the appropriate
-  PGF commands using the PGF- functions."))
+(defgeneric render (target object)
+  (:documentation "Render TARGET in FRAME, usually by emitting the appropriate
+PGF commands using the PGF- functions.")
+  (:method (target (sequence sequence))
+    (map nil (curry #'render target) sequence)))
 
 (defmacro with-clip-to-frame (frame &body body)
   `(progn

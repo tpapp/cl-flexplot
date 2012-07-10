@@ -23,8 +23,19 @@
 (defun latex-sexp? (form)
   (or (latex-atom? form) (latex-cons? form)))
 
+(defgeneric special-form-closure (first)
+  (:method (first)
+    nil))
+
+(defun special-form? (form)
+  (and (consp form) (special-form-closure (first form))))
+
+(defun process-special-form (processor form)
+  (apply (special-form-closure (first form)) processor (rest form)))
+
 (defun process (processor form)
   (cond
+    ((special-form? form) (process-special-form processor form))
     ((latex-atom? form) (process-latex-atom processor form))
     ((latex-cons? form) (process-latex-sexp processor form))
     ((consp form) (embed-code processor form))
@@ -115,12 +126,22 @@
         for form in body do (process compiler form)
         finally (return (ops compiler))))
 
+(defstruct (pt (:constructor pt (dimension)))
+  "LaTeX point."
+  (dimension nil :type real :read-only t))
+
 (defgeneric emit-value (value)
   (:documentation "Emit value to *OUTPUT* in a format understood by LaTeX.")
   (:method ((value real))
     (format *output* "~A" (float value 1.0)))
+  (:method ((pt pt))
+    (emit-value (pt-dimension pt))
+    (princ "pt" *output*))
   (:method ((string string))
-    (princ string *output*)))
+    (princ string *output*))
+  (:method ((list list))
+    (dolist (item list)
+      (latex "{" item "}"))))
 
 (defun generate-code (ops)
   (map 'list #'op->code ops))
@@ -128,3 +149,15 @@
 (defmacro latex (&body body)
   (let* ((ops (sexp->ops body)))
     `(progn ,@(generate-code ops))))
+
+;;; special forms
+
+(defmacro define-latex-special-op (name (processor &rest arguments)
+                                   &body body)
+  (with-unique-names (first)
+    `(defmethod special-form-closure ((,first (eql ',name)))
+       (lambda (,processor ,@arguments)
+         ,@body))))
+
+(define-latex-special-op :print (processor value)
+  (embed-value processor value))

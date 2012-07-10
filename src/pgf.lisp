@@ -56,7 +56,12 @@
     (latex (:pgfsys@color@rgb@stroke red green blue))))
 
 (defun pgf-set-line-width (width)
-  (latex (:pgfsetlinewidth (latex width "pt"))))
+  (latex (:pgfsetlinewidth (:print (pt width)))))
+
+(defun pgf-set-dash (dimensions &optional (phase 0))
+  (assert (divides? (length dimensions) 2) ()
+          "Dash dimensions need to have an even length.")
+  (latex (:pgfsetdash (:print (mapcar #'pt dimensions)) phase) :/))
 
 (defun pgf-fill ()
   (latex (:pgfusepath "fill") :/))

@@ -20,6 +20,7 @@
      (:file "latex")
      (:file "flex")
      (:file "pgf")
+     (:file "frame")
      (:file "external")))
    (:module "plot"
     :pathname #P"src/"
@@ -27,7 +28,6 @@
     :components
     ((:file "orientation")
      (:file "margin")
-     (:file "frame")
      (:file "drawing-area")
      (:file "bounding-box")
      (:file "axis")
