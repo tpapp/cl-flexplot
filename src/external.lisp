@@ -91,9 +91,8 @@ the PDF file, otherwise signal an error."
                      data)))
     (make-pathname :type "pdf" :defaults pathname)))
 
-(defun display-pdf (pathname &key (pdf-server "cl-plotpro") (raise? t))
+(defun display-pdf (pathname &key (pdf-server "cl-flexplot") (raise? t))
   "Display PDF by calling a PDF viewer."
-  ;; (copy-file pathname "/tmp/cl-plotpro.pdf")
   (external-program:start "xpdf"
                           (append (list "-remote" pdf-server
                                         (namestring pathname))
@@ -103,7 +102,7 @@ the PDF file, otherwise signal an error."
   "Default file used for rendering plots.  Use DEFAULT-TEMPORARY-FILE to
 access it.")
 
-(defun generate-temporary-file (&key (prefix "cl-plotpro-")
+(defun generate-temporary-file (&key (prefix "cl-flexplot-")
                                      (directory "/tmp/")
                                      type
                                      (characters "ABCDEFGHIJKLMNOPQRSTUVWXYZ")
@@ -136,7 +135,7 @@ exist.  If it encounters existing files for MAXIMUM-TRIES, signal an error."
 
 (defmacro with-displayed-picture ((&key (path '(default-temporary-file))
                                         (wrapper-filespec
-                                         "/tmp/cl-plotpro.tex")
+                                         "/tmp/cl-flexplot.tex")
                                         (raise? t))
                                   &body body)
   "Similar to WITH-PICTURE, but also displays the resulting PDF."
