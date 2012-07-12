@@ -12,7 +12,7 @@
   (make-instance 'vertical-band :horizontal-interval interval :fill-style fill))
 
 (defmethod render ((da drawing-area) (band vertical-band))
-  (with-drawing-area (da project)
+  (with-projection (da project)
     (let+ (((&ign vertical-interval) (domain da))
            ((&slots-r/o horizontal-interval fill-style) band)
            ((&flet pp (accessor)

@@ -47,6 +47,9 @@
 (defun pgf-rectangle (corner1 corner2)
   (latex (:pgfpathrectanglecorners corner1 corner2) :/))
 
+(defun pgf-path-circle (center radius)
+  (latex (:pgfpathcircle center (latex radius "pt")) :/))
+
 (defun pgf-stroke ()
   (latex (:pgfusepath "stroke") :/))
 

@@ -11,6 +11,10 @@
   (dash nil)
   (phase 0))
 
+(deftype stroke-style* ()
+  "Extended stroke style."
+  '(or null stroke-style))
+
 (defun pgf-set-stroke-style (stroke-style)
   (when stroke-style
     (let+ (((&structure-r/o stroke-style- width color dash phase) stroke-style))
@@ -42,6 +46,10 @@
 (defstruct fill-style
   "Fill style."
   (color +black+))
+
+(deftype fill-style* ()
+  "Extended fill style."
+  '(or null fill-style))
 
 (defun pgf-set-fill-style (fill-style)
   (when fill-style

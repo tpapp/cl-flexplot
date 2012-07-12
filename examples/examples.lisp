@@ -44,7 +44,7 @@
                         (make-coordinate-projection (interval -1 1) :linear)
                         (make-coordinate-projection (interval 2 9) :linear))))
     (random-tint frame)
-    (with-drawing-area (drawing-area project)
+    (with-projection (drawing-area project)
       (loop for u from -1 to 1 by (/ 10)
             do (pgf-lines (mapcar #'project (list (point u 2) (point u 9)))))
       (loop for v from 2 to 9 by (/ 2)
@@ -105,3 +105,19 @@
                           (incf sum (random 1d0)))))))
   :x-axis (math "t")
   :y-axis "cumulative sum"))
+
+(displaying
+ (plot
+  (let ((c (circle)))
+    (list
+     (mark (point 0 1) c)
+     (mark (point 1 0) c)
+     (mark +origin+ c)))))
+
+(displaying
+ (plot
+  (map 'list
+       (let ((c (circle)))
+         (lambda (theta)
+           (mark (point (sin theta) (cos theta)) c)))
+       (grid-in (interval 0 (* 2 pi)) 25))))

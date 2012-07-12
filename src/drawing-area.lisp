@@ -20,7 +20,7 @@
 ;;; linear coordinate projection
 
 (defstruct linear-projection
-  "Mapping the DOMAIN (intepreted as relativ ecoordinates) to [0,1]."
+  "Mapping the DOMAIN (intepreted as relative ecoordinates) to [0,1]."
   (offset nil :type real :read-only t)
   (coefficient nil :type real :read-only t)
   (domain nil :type finite-interval :read-only t))
@@ -48,7 +48,8 @@
 ;;; drawing area
 
 (defstruct (drawing-area
-            (:constructor make-drawing-area (frame x-projection y-projection)))
+            (:constructor make-drawing-area
+                (frame x-projection y-projection)))
   (frame nil :type frame :read-only t)
   (x-projection nil :read-only t)
   (y-projection nil :read-only t))
@@ -57,17 +58,40 @@
   (let+ (((&structure-r/o drawing-area- x-projection y-projection) da))
     (list (domain x-projection) (domain y-projection))))
 
-(defmacro with-drawing-area ((drawing-area project) &body body)
+(defmethod project ((da drawing-area) point)
+  (let+ (((&structure-r/o drawing-area- frame x-projection y-projection) da)
+         ((&point x y) point))
+    (project frame
+             (point (project x-projection x)
+                    (project y-projection y)))))
+
+(defmacro with-projection ((mapping project) &body body)
+  "Define a local function PROJECT that projects its argument using MAPPING."
   (check-type project symbol)
-  (once-only (drawing-area)
-    (with-unique-names (frame x-projection y-projection)
-      `(let+ (((&structure-r/o drawing-area-
-                               (,frame frame)
-                               (,x-projection x-projection)
-                               (,y-projection y-projection)) ,drawing-area)
-              ((&flet ,project (point)
-                 (let+ (((&point x y) point))
-                   (project ,frame
-                            (point (project ,x-projection x)
-                                   (project ,y-projection y)))))))
-         ,@body))))
+  (once-only (mapping)
+    `(flet ((,project (point)
+              (project ,mapping point)))
+      ,@body)))
+
+(defstruct origin-drawing-area
+  "Used for mapping absolute coordinates around some point in another drawing
+  area.  PROJECT takes a POINT containing real numbers and uses them to
+  translate around the original coordinates."
+  (frame nil :type frame :read-only t)
+  (x nil :type coordinate :read-only t)
+  (y nil :type coordinate :read-only t))
+
+(defun origin-drawing-area (drawing-area point)
+  "Create an ORIGIN-DRAWING-AREA at POINT.  POINT is mapped using
+DRAWING-AREA, and PROJECT called with the result translates as if point
+contained absolute coordinates."
+  (let+ (((&point x y) (project drawing-area point)))
+    (make-origin-drawing-area :frame (drawing-area-frame drawing-area)
+                              :x x :y y)))
+
+(defmethod project ((da origin-drawing-area) (point point))
+  (let+ (((&point p-x p-y) point)
+         ((&structure-r/o origin-drawing-area- x y) da))
+    (check-types (p-x p-y) real)
+    (point (flex+ x (absolute p-x))
+           (flex+ y (absolute p-y)))))

@@ -21,7 +21,8 @@
     :components ((:file "latex")
                  (:file "coordinates")
                  (:file "pgf")
-                 (:file "frame")))
+                 (:file "frame")
+                 (:file "external")))
    (:module "plot"
     :pathname #P"src/"
     :serial t
@@ -37,5 +38,9 @@
     :components ((:file "styles")
                  (:file "lines")
                  (:file "bands")
-                 (:file "functions")
-                 (:file "debug")))))
+                 (:file "marks")
+                 (:file "functions")))
+   (:module "misc"
+    :pathname #P"src/"
+    :serial t
+    :components ((:file "debug")))))

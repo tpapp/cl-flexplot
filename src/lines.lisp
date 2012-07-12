@@ -14,7 +14,7 @@
 
 (defmethod render ((drawing-area drawing-area) (lines lines))
   (let+ (((&slots-r/o points style) lines))
-    (with-drawing-area (drawing-area project)
+    (with-projection (drawing-area project)
       (pgf-set-stroke-style style)
       (pgf-lines (map 'vector #'project points)))))
 

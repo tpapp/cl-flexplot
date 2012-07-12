@@ -13,6 +13,9 @@
     (relative nil :type real :read-only t)
     (absolute nil :type real :read-only t)))
 
+(define-constant +origin+ (point 0 0) :test #'equalp
+  :documentation "Origin.")
+
 (deftype coordinate ()
   "Coordinate type used in the CL-FLEXPLOT library."
   '(or real flex))
