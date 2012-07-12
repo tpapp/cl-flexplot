@@ -121,3 +121,102 @@
          (lambda (theta)
            (mark (point (sin theta) (cos theta)) c)))
        (grid-in (interval 0 (* 2 pi)) 25))))
+
+
+;;; quantiles
+
+(let* ((y (generate-array 500 (lambda () (+ (random 1d0) (random 1d0)))))
+       (qq ))
+  (displaying (plot
+               (qy y)
+               :x-axis "probability"
+               :y-axis "quantile")))
+
+;; (displaying (500 400)
+;;             (plot
+;;              (let ((index 0))
+;;                (map 'list
+;;                     (lambda (center w1 w2)
+;;                       (prog1 (q5 (xy index
+;;                                      (vector (- center w2) (- center w1)
+;;                                              center
+;;                                              (+ center w1) (+ center w2)))
+;;                                  :mark (annotation (format nil "~D" index)))
+;;                         (incf index)))
+;;                     (numseq 0 5 :length 6)
+;;                     (numseq 0.4 0.7 :length 6)
+;;                     (numseq 0.9 2 :length 6)))))
+
+;;; function
+
+(let ((x (interval 0 10)))
+  (displaying
+              (plot
+               (list
+                (lines (fx #'sin x))
+                (lines (fx (lambda (x) (* 2 (cos x))) x)
+                       (stroke-style :color +grey+))))))
+
+;; ;;; panel
+
+;; (let ((m (outer* #(1 2 3) #(3 5)
+;;                  (lambda (a b)
+;;                    (lines (vector (xy 0 a)
+;;                                   (xy 1 b)))))))
+;;   (displaying (400 300)
+;;               (panel-plot m
+;;                           :x-title (title "x")
+;;                           :y-title (title "y")
+;;                           :x-axes (axis nil)
+;;                           :y-axes (axis nil)
+;;                           :panel-titles (title "foo"))))
+
+;; (displaying (400 300)
+;;             (let ((titles (list "sin" "cos")))
+;;               (panel-plot
+;;                (make-array '(2 1) :initial-contents
+;;                            (list (list (lines (fx #'sin (interval 0 (* 2 pi)))))
+;;                                  (list (lines (fx #'cos (interval 0 (* 2 pi)))))))
+;;                :panel-titles titles
+;;                :y-axes (mapcar #'axis titles))))
+
+;; (let* ((a (generate-array 100 (rv:generator (rv:r-normal))))
+;;        (b (generate-array 50 (rv:generator (rv:r-normal 4))))
+;;        (c (generate-array 80 (rv:generator (rv:r-normal 0 2))))
+;;        (abc (sort-reals (concatenate 'vector a b c))))
+;;   (displaying (400 300)
+;;               (panel-plot
+;;                (matrix (list (list
+;;                               (lines (qq abc a))
+;;                               (diagonal-guide))
+;;                              (list
+;;                               (lines (qq abc b))
+;;                               (diagonal-guide)))
+;;                        (list (list
+;;                               (lines (qq abc c))
+;;                               (diagonal-guide))
+;;                              nil))
+;;                :uniform-x? t :uniform-y? t)))
+
+;; ;;; grid
+
+;; (flet ((f (function y-title)
+;;          (plot
+;;           (lines (fx function (interval 0 (* 2 pi))))
+;;           :y-axis (axis y-title))))
+;;   (displaying (500 300)
+;;               (grid (matrix (list (f #'sin "sin(x)"))
+;;                             (list (f #'cos "cos(x)"))))))
+
+;; (let+ (((&flet f (function y-title &optional (interval (interval 0 (* 2 pi))))
+;;           (plot
+;;            (lines (fx function interval))
+;;            :y-axis (axis y-title))))
+;;        ((&flet p (degree)
+;;           (f (lambda (x) (expt x degree)) (format nil "x^~d" degree)
+;;              (interval -1 1)))))
+;;   (displaying (500 500)
+;;               (grid (matrix (list (f #'sin "sin(x)") (f #'cos "cos(x)"))
+;;                             (list (grid (matrix (list (p 2) (p 3))
+;;                                                 (list (p 4) (p 5))))
+;;                                   nil)))))

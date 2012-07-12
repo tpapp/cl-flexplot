@@ -39,7 +39,8 @@
                  (:file "lines")
                  (:file "bands")
                  (:file "marks")
-                 (:file "functions")))
+                 (:file "functions")
+                 (:file "quantiles")))
    (:module "misc"
     :pathname #P"src/"
     :serial t
