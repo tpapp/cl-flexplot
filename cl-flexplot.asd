@@ -36,7 +36,9 @@
     :pathname #P"src/"
     :serial t
     :components
-    ((:file "simple-objects")))
+    ((:file "styles")
+     (:file "lines")
+     (:file "bands")))
    (:module "misc"
     :pathname #P"src/"
     :serial t

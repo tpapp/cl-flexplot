@@ -66,6 +66,21 @@
 (defun pgf-fill ()
   (latex (:pgfusepath "fill") :/))
 
+(defun print-comma-separated (stream &rest strings)
+  (let ((first t))
+    (loop for string in strings
+          do (when string
+               (if first
+                   (setf first nil)
+                   (princ #\, stream))
+               (princ string stream)))))
+
+(defun pgf-use-path (&key fill stroke clip)
+  (latex (:pgfusepath (print-comma-separated *output*
+                                             (when fill "fill")
+                                             (when stroke "stroke")
+                                             (when clip "clip")))))
+
 (defun pgf-reset-bounding-box ()
   (latex (:pgfresetboundingbox) :/))
 

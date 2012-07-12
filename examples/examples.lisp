@@ -79,3 +79,11 @@
             (horizontal-guide 0.5)
             (vertical-guide 0.2)
             (diagonal-guide)))))
+
+(with-displayed-picture ()
+  (render +unit-frame+
+          (plot
+           (list
+            (vertical-band (interval 0.3 0.8))
+            (lines (list (point 1 0)
+                         (point 0 1)))))))

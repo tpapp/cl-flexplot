@@ -2,37 +2,6 @@
 
 (in-package #:cl-flexplot)
 
-;;; line styles
-
-(defstruct line-style
-  (width 1)
-  (color +black+)
-  (dash nil)
-  (phase 0))
-
-(defun pgf-set-line-style (line-style)
-  (let+ (((&structure-r/o line-style- width color dash phase) line-style))
-    (pgf-set-line-width width)
-    (pgf-set-stroke-color color)
-    (pgf-set-dash dash phase)))
-
-(defparameter *line-style* (make-line-style))
-
-(defun line-style (&key (width (line-style-width *line-style*))
-                        (color (line-style-color *line-style*))
-                        (dash (line-style-dash *line-style*))
-                        (phase (line-style-phase *line-style*)))
-  (make-line-style :width width :color color :dash dash :phase phase))
-
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (defun dash-even (spacing)
-    "Evenly placed dash."
-    (list spacing spacing)))
-
-(define-constant +dash-solid+ '() :test #'equal)
-(define-constant +dash-dot+ (dash-even 1) :test #'equal)
-(define-constant +dash-line+ (dash-even 4) :test #'equal)
-
 ;;; lines
 
 (defclass lines (simple-print-object-mixin)
@@ -46,21 +15,21 @@
 (defmethod render ((drawing-area drawing-area) (lines lines))
   (let+ (((&slots-r/o points style) lines))
     (with-drawing-area (drawing-area project)
-      (pgf-set-line-style style)
+      (pgf-set-stroke-style style)
       (pgf-lines (map 'vector #'project points)))))
 
-(defun lines (points &optional (style *line-style*))
+(defun lines (points &optional (style *stroke-style*))
   (make-instance 'lines :points points :style style))
 
 ;;; guides
 
-(defparameter *guide-style* (make-line-style :width 0.5 :color +gray50+)
+(defparameter *guide-style* (make-stroke-style :width 0.5 :color +gray50+)
   "Default guide style.")
 
 (defclass guide (simple-print-object-mixin non-extending-object-mixin)
   ((intercept :initarg :intercept :type real)
    (slope :initarg :slope :type (or real null))
-   (style :initarg :style :type line-style))
+   (style :initarg :style :type stroke-style))
   (:documentation "A guide on the locus y=intercept+slope*x.  When SLOPE is
 NIL, the locus is x=INTERCEPT."))
 

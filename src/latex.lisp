@@ -130,6 +130,10 @@
   "LaTeX point."
   (dimension nil :type real :read-only t))
 
+(defmacro latex (&body body)
+  (let* ((ops (sexp->ops body)))
+    `(progn ,@(generate-code ops))))
+
 (defgeneric emit-value (value)
   (:documentation "Emit value to *OUTPUT* in a format understood by LaTeX.")
   (:method ((value real))
@@ -145,10 +149,6 @@
 
 (defun generate-code (ops)
   (map 'list #'op->code ops))
-
-(defmacro latex (&body body)
-  (let* ((ops (sexp->ops body)))
-    `(progn ,@(generate-code ops))))
 
 ;;; special forms
 
