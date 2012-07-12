@@ -26,9 +26,9 @@
   "Default stroke-style.")
 
 (defun stroke-style (&key (width (stroke-style-width *stroke-style*))
-                        (color (stroke-style-color *stroke-style*))
-                        (dash (stroke-style-dash *stroke-style*))
-                        (phase (stroke-style-phase *stroke-style*)))
+                          (color (stroke-style-color *stroke-style*))
+                          (dash (stroke-style-dash *stroke-style*))
+                          (phase (stroke-style-phase *stroke-style*)))
   "Create a stroke-style.  Defaults are taken from *STROKE-STYLE*."
   (make-stroke-style :width width :color color :dash dash :phase phase))
 
