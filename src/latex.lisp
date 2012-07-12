@@ -169,3 +169,11 @@
 (defun math (string)
   "STRING is interpreted as LaTeX code for (inline) math."
   (format nil "$~A$" string))
+
+(defmacro with-latex-environment (environment &body body)
+  "Wrap BODY in the given LaTeX ENVIRONMENT (should be a string)."
+  (check-type environment string)
+  `(progn
+     (latex (:begin ,environment) :/)
+     (multiple-value-prog1 (progn ,@body)
+       (latex (:end ,environment) :/))))

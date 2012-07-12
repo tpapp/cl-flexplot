@@ -84,14 +84,17 @@ functionality.  Uses a one-pass algorithm.  YS must be a sorted vector."
     (nreverse objects)))
 
 (defun qy (y &key (mark (circle :size 2)) (stroke *stroke-style*)
-                  (drop 1/200) (separate 1/100) (qrule qrule8))
+                  (drop 1/200) (separate 1/100) (qrule qrule8)
+                  (function #'identity))
   "Construct quantile plot for a univariate sequence Y, thinning with QY-THIN
 using MARK for points and LINE-STYLE for parts (see that function for
-explanation on DROP and SEPARATE).  Uses QRULE to position quantile points."
+explanation on DROP and SEPARATE).  Uses QRULE to position quantile points.
+FUNCTION is called on the X coordinates, and can be used for QQ plots."
   (let+ ((ys (ensure-sorted-vector y))
          (n (length ys))
          ((&flet qy (index-y)
-            (point (quantile-position qrule (car index-y) n) (cdr index-y)))))
+            (point (funcall function (quantile-position qrule (car index-y) n))
+                   (cdr index-y)))))
     (qy-thin ys
              (lambda (index-y)
                (mark (qy index-y) mark))

@@ -98,6 +98,9 @@
 (defun pgf-use-as-bounding-box ()
   (latex (:pgfusepath "use as bounding box") :/))
 
+(defmacro pgf-scope (&body body)
+  `(with-latex-environment "pgfscope" ,@body))
+
 ;;; convenience functions
 
 (defun pgf-lines (points)

@@ -171,11 +171,8 @@ PGF commands using the PGF- functions.")
     (map nil (curry #'render target) sequence)))
 
 (defmacro with-clip-to-frame (frame &body body)
-  (declare (ignore frame))
-  `(progn
-    ,@body)
-#+nil  `(pdf:with-saved-state
-     (%rectangle ,frame)
-     (pdf:clip-path)
-     (pdf:end-path-no-op)
+  "Clip to the rectangle of FRAME."
+  `(pgf-scope
+     (pgf-frame-rectangle ,frame)
+     (pgf-use-path :clip t)
      ,@body))

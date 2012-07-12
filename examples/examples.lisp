@@ -125,11 +125,15 @@
 
 ;;; quantiles
 
+(require :cl-random)
+
 (let* ((y (generate-array 500 (lambda () (+ (random 1d0) (random 1d0)))))
        (qq ))
   (displaying (plot
-               (qy y)
-               :x-axis "probability"
+               (list
+                (diagonal-guide)
+                (qy y :function (curry #'quantile (rv:r-normal (mean y) (variance y)))))
+               :x-axis "equivalent normal"
                :y-axis "quantile")))
 
 ;; (displaying (500 400)
@@ -151,11 +155,11 @@
 
 (let ((x (interval 0 10)))
   (displaying
-              (plot
-               (list
-                (lines (fx #'sin x))
-                (lines (fx (lambda (x) (* 2 (cos x))) x)
-                       (stroke-style :color +grey+))))))
+   (plot
+    (list
+     (lines (fx #'sin x))
+     (lines (fx (lambda (x) (* 2 (cos x))) x)
+            (stroke-style :color +grey+))))))
 
 ;; ;;; panel
 
