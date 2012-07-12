@@ -57,7 +57,7 @@ title."))
     (unless string
       (return-from render-with-orientation))
     (pgf-set-fill-color color)         ; FIXME this probably won't affect text
-    (pgf-text (center frame) string
+    (pgf-text (project frame (point 0.5 0.5)) string
               :rotate (ecase orientation
                         ((:top :bottom) 0)
                         (:left 90)

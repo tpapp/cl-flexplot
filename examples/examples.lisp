@@ -73,10 +73,6 @@
 ;;; plots
 
 
-(defun displaying (object)
-  (with-displayed-picture ()
-    (render +unit-frame+ object)))
-
 (displaying
  (plot
   (list

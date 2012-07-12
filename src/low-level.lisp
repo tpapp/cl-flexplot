@@ -182,6 +182,7 @@
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defstruct (flex (:constructor flex (relative absolute)))
+    "A pair of relative (interpreted on [0,1]) and absolute coordinates."
     (relative nil :type real :read-only t)
     (absolute nil :type real :read-only t)))
 
@@ -204,6 +205,7 @@
     0))
 
 (defun absolute (abs-part)
+  "Convenience function for creating an absolute coordinate."
   (flex 0 abs-part))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
@@ -531,16 +533,12 @@ the rest from FRAME."
 
 
 (defgeneric project (mapping point)
-  (:documentation ""))
-
-(defun center (mapping)
-  (project mapping (point 0.5 0.5)))
+  (:documentation "Project POINT using MAPPING."))
 
 (defmethod project ((frame frame) (point point))
   (let+ (((&frame-r/o left right bottom top) frame)
          ((&point x y) point))
     (point (flex-project left right x) (flex-project bottom top y))))
-
 
 
 
@@ -563,17 +561,17 @@ PGF commands using the PGF- functions.")
 
 
 
-(defun unit-bounding-box ()
+(defun pgf-bounding-box ()
+  "Unit bounding box for plots.."
   (pgf-reset-bounding-box)
   (pgf-frame-rectangle +unit-frame+)
   (pgf-use-as-bounding-box))
-
 
 (defmacro with-flexplot-output ((filespec &key (if-exists :supersede))
                                 &body body)
   `(with-latex-output (,filespec :if-exists ,if-exists)
      ,@body
-     (unit-bounding-box)))
+     (pgf-bounding-box)))
 
 (defparameter *latex-header*
   "\\documentclass[a4paper,12pt]{article}
@@ -607,6 +605,7 @@ PGF commands using the PGF- functions.")
                                  (if-exists :supersede)
                                  (width *latex-width*)
                                  (height *latex-height*))
+  "Write a LaTeX wrapper file."
   (with-output-to-file (stream wrapper-filespec :if-exists if-exists)
     (let+ (((&flet w (string)
               (write-sequence string stream))))
@@ -616,7 +615,8 @@ PGF commands using the PGF- functions.")
 
 (define-condition latex-error (error)
   ((code :initarg :code)
-   (log :initarg :log)))
+   (log :initarg :log))
+  (:documentation ""))
 
 (defmethod print-object ((latex-error latex-error) stream)
   (print-unreadable-object (latex-error stream :type t)
@@ -684,20 +684,33 @@ exist.  If it encounters existing files for MAXIMUM-TRIES, signal an error."
 (defun default-temporary-file (&optional reset)
   "Return the default temporary file.  When RESET, create a new filename."
   (when (or (not *default-temporary-file*) reset)
-    (setf *default-temporary-file* (generate-temporary-file)))
+    (setf *default-temporary-file*
+          (generate-temporary-file :type "flexplot")))
   *default-temporary-file*)
 
+(defparameter *default-wrapper* #P"/tmp/cl-flexplot.tex"
+  "Default wrapper filespec for displaying.")
+
 (defmacro with-displayed-picture ((&key (path '(default-temporary-file))
-                                        (wrapper-filespec
-                                         "/tmp/cl-flexplot.tex")
+                                        (wrapper '*default-wrapper*)
                                         (raise? t))
                                   &body body)
   "Similar to WITH-PICTURE, but also displays the resulting PDF."
-  (once-only (path)
+  (once-only (path wrapper)
     (with-unique-names (pdf-path)
       `(progn
          (with-flexplot-output (,path)
            ,@body)
-         (write-latex-wrapper ,wrapper-filespec ,path)
-         (let ((,pdf-path (compile-latex ,wrapper-filespec)))
+         (write-latex-wrapper ,wrapper ,path)
+         (let ((,pdf-path (compile-latex ,wrapper)))
            (display-pdf ,pdf-path :raise? ,raise?))))))
+
+(defmethod render ((pathname pathname) object)
+  (with-flexplot-output (pathname)
+    (render +unit-frame+ object)))
+
+(defun displaying (object &key (path (default-temporary-file))
+                               (wrapper *default-wrapper*)
+                               (raise? t))
+  (with-displayed-picture (:path path :wrapper wrapper :raise? raise?)
+    (render +unit-frame+ object)))
