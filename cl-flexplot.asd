@@ -11,37 +11,18 @@
                #:iterate
                #:let-plus)
   :serial t
+  :pathname #P"src/"
   :components
-  ((:module "low-level"
-    :pathname #P"src/"
-    :serial t
-    :components
-    ((:file "package")
-     (:file "latex")
-     (:file "flex")
-     (:file "pgf")
-     (:file "frame")
-     (:file "external")))
-   (:module "plot"
-    :pathname #P"src/"
-    :serial t
-    :components
-    ((:file "orientation")
-     (:file "margin")
-     (:file "drawing-area")
-     (:file "bounding-box")
-     (:file "axis")
-     (:file "plot")))
-   (:module "objects"
-    :pathname #P"src/"
-    :serial t
-    :components
-    ((:file "styles")
-     (:file "lines")
-     (:file "bands")
-     (:file "functions")))
-   (:module "misc"
-    :pathname #P"src/"
-    :serial t
-    :components
-    ((:file "debug")))))
+  ((:file "package")
+   (:file "low-level")
+   (:file "orientation")
+   (:file "margin")
+   (:file "drawing-area")
+   (:file "bounding-box")
+   (:file "axis")
+   (:file "plot")
+   (:file "styles")
+   (:file "lines")
+   (:file "bands")
+   (:file "functions")
+   (:file "debug")))

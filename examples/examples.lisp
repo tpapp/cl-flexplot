@@ -56,19 +56,19 @@
          (l (split5 +unit-frame+ p p)))
     (random-tint l)))
 
-(with-displayed-picture ()
-  (let+ (((center left bottom right top) (split5 +unit-frame+
-                                                 (flex-spacer (flex 1/4 60))
-                                                 (flex-spacer (flex 1/4 40))))
-         (s-left (generate-scale :left (axis "left") (interval -2 3)))
-         (s-bottom (generate-scale :bottom (axis "bottom") (interval -7 1)))
-         (s-right (generate-scale :right (axis "right") (interval 0 9)))
-         (s-top (generate-scale :top (axis "top") (interval -2 3))))
-    (random-tint center)
-    (render-with-orientation left s-left :left)
-    (render-with-orientation right s-right :right)
-    (render-with-orientation bottom s-bottom :bottom)
-    (render-with-orientation top s-top :top)))
+;; (with-displayed-picture ()
+;;   (let+ (((center left bottom right top) (split5 +unit-frame+
+;;                                                  (flex-spacer (flex 1/4 60))
+;;                                                  (flex-spacer (flex 1/4 40))))
+;;          (s-left (generate-scale :left (axis "left") (interval -2 3)))
+;;          (s-bottom (generate-scale :bottom (axis "bottom") (interval -7 1)))
+;;          (s-right (generate-scale :right (axis "right") (interval 0 9)))
+;;          (s-top (generate-scale :top (axis "top") (interval -2 3))))
+;;     (random-tint center)
+;;     (render-with-orientation left s-left :left)
+;;     (render-with-orientation right s-right :right)
+;;     (render-with-orientation bottom s-bottom :bottom)
+;;     (render-with-orientation top s-top :top)))
 
 ;;; plots
 
@@ -107,5 +107,5 @@
                  (loop for index below length
                        do (setf (aref it index) sum)
                           (incf sum (random 1d0)))))))
-  :x-axis "$t$"
+  :x-axis (math "t")
   :y-axis "cumulative sum"))
