@@ -2,6 +2,13 @@
 
 (in-package #:cl-flexplot)
 
+;;; PGF operations
+;;;
+;;; Functions starting with PGF- all emit LaTeX code which is processed by
+;;; PGF.  Some of these functions correspond to PGF primitives, while others
+;;; are convenience functions.  Nevertheless, a function should start with
+;;; PGF- if and only if it emits LaTeX code for PGF.
+
 (defun pgf-text-align-string (align)
   "Return a string for valid text alignment options."
   ;; Note: PGF's align orientation is the exact opposite of what this library
@@ -87,7 +94,6 @@
 
 (defun pgf-use-as-bounding-box ()
   (latex (:pgfusepath "use as bounding box") :/))
-
 
 ;;; convenience functions
 
