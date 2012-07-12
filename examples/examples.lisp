@@ -70,20 +70,42 @@
     (render-with-orientation bottom s-bottom :bottom)
     (render-with-orientation top s-top :top)))
 
-(with-displayed-picture ()
-  (render +unit-frame+
-          (plot
-           (list
-            (lines (list (point 0.1 0)
-                         (point 1 1)))
-            (horizontal-guide 0.5)
-            (vertical-guide 0.2)
-            (diagonal-guide)))))
+;;; plots
 
-(with-displayed-picture ()
-  (render +unit-frame+
-          (plot
-           (list
-            (vertical-band (interval 0.3 0.8))
-            (lines (list (point 1 0)
-                         (point 0 1)))))))
+
+(defun displaying (object)
+  (with-displayed-picture ()
+    (render +unit-frame+ object)))
+
+(displaying
+ (plot
+  (list
+   (lines (list (point 0.1 0)
+                (point 1 1)))
+   (horizontal-guide 0.5)
+   (vertical-guide 0.2)
+   (diagonal-guide))))
+
+(displaying
+ (plot
+  (list
+   (vertical-band (interval 0.3 0.8))
+   (lines (list (point 1 0)
+                (point 0 1))))))
+
+(displaying
+ (plot
+  (list
+   (horizontal-guide 0)
+   (lines (fx #'sin (interval (- pi) pi))))))
+
+(displaying
+ (plot
+  (lines (ty (let* ((length 100)
+                    (sum 0d0))
+               (aprog1 (make-array length)
+                 (loop for index below length
+                       do (setf (aref it index) sum)
+                          (incf sum (random 1d0)))))))
+  :x-axis "$t$"
+  :y-axis "cumulative sum"))

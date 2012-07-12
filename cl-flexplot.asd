@@ -38,7 +38,8 @@
     :components
     ((:file "styles")
      (:file "lines")
-     (:file "bands")))
+     (:file "bands")
+     (:file "functions")))
    (:module "misc"
     :pathname #P"src/"
     :serial t

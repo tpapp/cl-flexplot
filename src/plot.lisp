@@ -19,8 +19,8 @@
    (y-other-axis :accessor y-other-axis :initarg :y-other-axis)))
 
 (defun plot (objects
-             &key (x-axis (axis "x"))
-                  (y-axis (axis "y"))
+             &key (x-axis (axis (math "x")))
+                  (y-axis (axis (math "y")))
                   (x-other-axis (transformation :ticks :marks-only))
                   (y-other-axis (transformation :ticks :marks-only)))
   (let ((bounding-box (bounding-box objects)))

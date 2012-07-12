@@ -134,10 +134,15 @@
   (let* ((ops (sexp->ops body)))
     `(progn ,@(generate-code ops))))
 
+(defun latex-print-number (stream number)
+  (etypecase number
+    (integer (format stream "~A" number))
+    (real (format stream "~,5F" number))))
+
 (defgeneric emit-value (value)
   (:documentation "Emit value to *OUTPUT* in a format understood by LaTeX.")
   (:method ((value real))
-    (format *output* "~A" (float value 1.0)))
+    (latex-print-number *output* value))
   (:method ((pt pt))
     (emit-value (pt-dimension pt))
     (princ "pt" *output*))
@@ -161,3 +166,6 @@
 
 (define-latex-special-op :print (processor value)
   (embed-value processor value))
+
+(defun math (string)
+  (format nil "$~A$" string))
