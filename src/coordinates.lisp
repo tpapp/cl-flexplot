@@ -13,9 +13,6 @@
     (relative nil :type real :read-only t)
     (absolute nil :type real :read-only t)))
 
-(define-constant +origin+ (point 0 0) :test #'equalp
-  :documentation "Origin.")
-
 (deftype coordinate ()
   "Coordinate type used in the CL-FLEXPLOT library."
   '(or real flex))
@@ -84,10 +81,10 @@
   (flex (apply function (mapcar #'rel-part arguments))
         (apply function (mapcar #'abs-part arguments))))
 
-
-(defstruct (point (:constructor point (x y)))
-  (x nil :type coordinate)
-  (y nil :type coordinate))
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defstruct (point (:constructor point (x y)))
+    (x nil :type coordinate)
+    (y nil :type coordinate)))
 
 (define-structure-let+ (point) x y)
 
@@ -95,3 +92,6 @@
   (let+ (((&point-r/o (&flex x-r x-a) (&flex y-r y-a)) point))
     (latex
       (:cc x-r x-a y-r y-a))))
+
+(define-constant +origin+ (point 0 0) :test #'equalp
+  :documentation "Origin.")
