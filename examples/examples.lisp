@@ -224,3 +224,13 @@
 ;;                             (list (grid (matrix (list (p 2) (p 3))
 ;;                                                 (list (p 4) (p 5))))
 ;;                                   nil)))))
+
+
+;;; categories
+
+(displaying
+ (plot (list (mark (point 0 0) (circle))
+             (mark (point 0.5 0) (circle))
+             (mark (point 0 1) (circle))
+             (mark (point 1 1) (circle)))
+       :y-axis (categories "y" '("foo" "bar"))))

@@ -5,4 +5,9 @@
         #:iterate #:let-plus)
   (:shadowing-import-from #:cl-num-utils #:mean #:variance #:median ; also in ALEXANDRIA
                           #:sum)        ; also in ITERATE
-  )
+  (:export
+   :displaying)
+  (:export
+   :plot
+   :lines
+   :fx))

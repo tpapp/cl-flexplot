@@ -65,10 +65,12 @@ title."))
 
 ;;; axis
 
-(defclass axis (margin-mixin title-mixin simple-print-object-mixin)
+(defclass axis-like (margin-mixin title-mixin simple-print-object-mixin)
   ((mark-length :initarg :mark-length)
-   (annotation-distance :initarg :annotation-distance)
-   (marks-number :initarg :marks-number)
+   (annotation-distance :initarg :annotation-distance)))
+
+(defclass axis (axis-like)
+  ((marks-number :initarg :marks-number)
    (interval :initarg :interval :type (or interval function)
              :documentation "An interval, or a function which is called on the
              bounding box.  Used to transform the interval obtained from the
@@ -114,7 +116,7 @@ title."))
   necessary.")
   (:method (title)
     (axis title))
-  (:method ((axis axis))
+  (:method ((axis axis-like))
     axis))
 
 ;;;; ticks and scales
@@ -400,3 +402,42 @@ DIGITS-AFTER-DECIMAL gives the number of digits after the decimal point."
        (return
          (make-instance 'ticks :positions positions :marks marks
                                :annotations annotations))))))
+
+;;; categories
+
+(defclass categories (axis-like)
+  ((annotations :initarg :annotations)
+   (padding :initarg :padding))
+  (:documentation "FIXME"))
+
+(defparameter *categories-padding* 0.5
+  "FIXME")
+
+(defun categories (title categories
+                   &key (padding *categories-padding*)
+                        (margin *axis-margin*)
+                        (mark-length *axis-mark-length*)
+                        (annotation-distance *axis-annotation-distance*))
+  (make-instance 'categories
+                 :title title :margin margin :mark-length mark-length
+                 :annotation-distance annotation-distance
+                 :annotations categories :padding padding))
+
+(defmethod generate-scale (orientation (categories categories)
+                           (interval interval))
+  (let+ (((&slots-r/o mark-length annotation-distance annotations padding)
+          categories)
+         ((l . r) (o-orthogonal-pair orientation))
+         (n (length annotations))
+         (domain (interval-hull
+                  (list (interval (- (orientation l padding))
+                                  (+ (1- n) (orientation r padding)))
+                        interval)))
+         (ticks (make-instance 'ticks :positions (iota n)
+                               :marks (make-list n :initial-element
+                                                 mark-length)
+                               :annotations annotations)))
+    (make-instance 'scale
+                   :projection (make-coordinate-projection domain :linear)
+                   :ticks ticks
+                   :annotation-distance annotation-distance)))

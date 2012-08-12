@@ -27,6 +27,12 @@ orientations."
     (:top :bottom)
     (:bottom :top)))
 
+(defun o-orthogonal-pair (orientation)
+  "Return a pair of orthogonal orientations."
+  (if (o-horizontal? orientation)
+      '(:bottom . :top)
+      '(:left . :right)))
+
 (defstruct (orientation-dependent
             (:constructor orientation-dependent (left bottom
                                                  &key (right left) (top bottom))))
