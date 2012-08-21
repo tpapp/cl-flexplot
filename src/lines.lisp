@@ -68,3 +68,10 @@ NIL, the locus is x=INTERCEPT."))
 
 (defun diagonal-guide (&optional (style *guide-style*))
   (guide 0 1 style))
+
+(defun categories-guides (categories horizontal? &optional (style *guide-style*))
+  (let+ (((&slots-r/o annotations) categories))
+    (loop for index from 0 below (length annotations)
+          collect (if horizontal?
+                      (horizontal-guide index style)
+                      (vertical-guide index style)))))
