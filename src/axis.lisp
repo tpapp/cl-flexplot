@@ -88,6 +88,12 @@ title."))
   (:method ((function null) interval)
     interval))
 
+(defun include (&rest objects)
+  "a closure that returns the interval-hull of its argument and objects."
+  (let ((hull (interval-hull objects)))
+    (lambda (interval)
+      (interval-hull (list hull interval)))))
+
 (defparameter *axis-margin* (orientation-dependent (flex 0 45) (flex 0 35))
   "Default decoration margin for axes.")
 
