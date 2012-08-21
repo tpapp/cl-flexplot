@@ -229,8 +229,17 @@
 ;;; categories
 
 (displaying
- (plot (list (mark (point 0 0) (circle))
-             (mark (point 0.5 0) (circle))
-             (mark (point 0 1) (circle))
-             (mark (point 1 1) (circle)))
-       :y-axis (categories "y" '("foo" "bar"))))
+    (plot (list (mark (point 0 0) (circle))
+                (mark (point 0.5 0) (circle))
+                (mark (point 0 1) (circle))
+                (mark (point 1 1) (circle)))
+     :y-axis (categories "y" '("foo" "bar"))))
+
+
+;;; marks
+
+(displaying
+    (plot (list (mark (point 0 0) (circle :size 9))
+                (mark (point 1 1) (circle :size 7 :stroke nil
+                                          :fill (fill-style :color +blue+)))
+                (mark (point 0.5 0.5) (label "label")))))
