@@ -7,6 +7,7 @@
 \newcommand{\flexaxisannotation}[1]{$#1$}
 
 \newcommand{\includeflexplot}[3]{%
+{%
 \newcommand{\ax}{#1}%
 \newcommand{\ay}{#2}%
 \newcommand{\rc}[2]{\pgfpointadd%
@@ -17,4 +18,5 @@
 \begin{pgfpicture}%
 \makeatletter%
 \input{#3}%
-\makeatother\end{pgfpicture}}
+\makeatother%
+\end{pgfpicture}}}
