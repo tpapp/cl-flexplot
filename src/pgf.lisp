@@ -72,7 +72,7 @@
   (assert (divides? (length dimensions) 2) ()
           "Dash dimensions need to have an even length.")
   (latex (:pgfsetdash (loop for dimension in dimensions
-                            do (latex dimension "pt")) phase) :/))
+                            do (latex "{" dimension "pt" "}")) phase) :/))
 
 (defun pgf-fill ()
   (latex (:pgfusepath "fill") :/))
