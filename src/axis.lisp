@@ -103,7 +103,7 @@ title."))
 (defparameter *axis-annotation-distance* (absolute 6)
   "Distance of annotation from axis line.")
 
-(defparameter *axis-marks-number* 7
+(defparameter *axis-marks-number* 5
   "Default target for the number of marks.")
 
 (defun axis (title
