@@ -47,4 +47,7 @@
    :object-points
    :extend-bounding-box
    :bounding-box
-   :strut))
+   :strut
+   :+dash-solid+
+   :+dash-dot+
+   :+dash-line+))
