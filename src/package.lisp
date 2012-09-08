@@ -42,4 +42,9 @@
    :segment
    :segment-xy
    :q5-y
-   :*default-mark*))
+   :*default-mark*
+   :guide
+   :object-points
+   :extend-bounding-box
+   :bounding-box
+   :strut))

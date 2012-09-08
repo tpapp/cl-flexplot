@@ -59,3 +59,13 @@ of plotting objects or a single plotting object.")
 (defmethod extend-bounding-box ((box bounding-box)
                                 (object non-extending-object-mixin))
   box)
+
+(defstruct (strut (:constructor strut (&rest objects)))
+  "Objects are only used for extending the bounding box, otherwise they are
+not rendered."
+  (objects nil :type list :read-only t))
+
+(defmethod render (target (strut strut)))
+
+(defmethod extend-bounding-box ((box bounding-box) (strut strut))
+  (extend-bounding-box box (strut-objects strut)))
