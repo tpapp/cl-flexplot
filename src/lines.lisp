@@ -21,6 +21,10 @@
 (defun lines (points &optional (style *stroke-style*))
   (make-instance 'lines :points points :style style))
 
+(defun lines-xy (xs ys &optional (style *stroke-style*))
+  (lines (map 'vector #'point xs ys) style))
+
+
 ;;; guides
 
 (defparameter *guide-style* (make-stroke-style :width 0.5 :color +gray50+)

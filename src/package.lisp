@@ -37,4 +37,5 @@
    :*axis-margin*
    :mark-xy
    :label
-   :*label-color*))
+   :*label-color*
+   :lines-xy))
