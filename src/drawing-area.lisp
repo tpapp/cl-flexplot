@@ -95,3 +95,20 @@ contained absolute coordinates."
     (check-types (p-x p-y) real)
     (point (flex+ x (absolute p-x))
            (flex+ y (absolute p-y)))))
+
+
+
+(defmacro define-expansion ((drawing-area instance-and-class
+                             &key use-for-bounding-box)
+                            &body body)
+  "Define RENDER (and optionally EXTEND-BOUNDING-BOX) expansions for objects
+which are composed of primitives that are returned by BODY."
+  (let+ (((instance &optional (class instance)) (ensure-list instance-and-class)))
+    `(progn
+       (defmethod render ((,drawing-area drawing-area) (,instance ,class))
+         (render ,drawing-area (progn ,@body)))
+       ,@(splice-when use-for-bounding-box
+           ;; FIXME should memoize?
+           (with-unique-names (box)
+             `(defmethod extend-bounding-box ((,box bounding-box) (,instance ,class))
+                (extend-bounding-box ,box (progn ,@body))))))))

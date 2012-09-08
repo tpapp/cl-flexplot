@@ -136,22 +136,23 @@
                :x-axis "equivalent normal"
                :y-axis "quantile")))
 
-;; (displaying (500 400)
-;;             (plot
-;;              (let ((index 0))
-;;                (map 'list
-;;                     (lambda (center w1 w2)
-;;                       (prog1 (q5 (xy index
-;;                                      (vector (- center w2) (- center w1)
-;;                                              center
-;;                                              (+ center w1) (+ center w2)))
-;;                                  :mark (annotation (format nil "~D" index)))
-;;                         (incf index)))
-;;                     (numseq 0 5 :length 6)
-;;                     (numseq 0.4 0.7 :length 6)
-;;                     (numseq 0.9 2 :length 6)))))
+(displaying
+    (plot
+     (let ((index 0))
+       (map 'list
+            (lambda (center w1 w2)
+              (prog1 (q5-y index
+                           (vector (- center w2) (- center w1)
+                                   center
+                                   (+ center w1) (+ center w2))
+                           :mark (label (format nil "~D" index)))
+                (incf index)))
+            (numseq 0 5 :length 6)
+            (numseq 0.4 0.7 :length 6)
+            (numseq 0.9 2 :length 6)))))
 
-;;; function
+
+;;; functions
 
 (let ((x (interval 0 10)))
   (displaying

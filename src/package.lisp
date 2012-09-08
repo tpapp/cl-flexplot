@@ -40,4 +40,6 @@
    :*label-color*
    :lines-xy
    :segment
-   :segment-xy))
+   :segment-xy
+   :q5-y
+   :*default-mark*))

@@ -15,16 +15,18 @@
   (let+ (((&structure-r/o mark- point object) mark))
     (render (origin-drawing-area da point) object)))
 
-(defun marks (points &optional (object (circle)))
+(defparameter *default-mark* (circle) "Default mark.")
+
+(defun marks (points &optional (object *default-mark*))
   "Marks with given OBJECT at POINTS."
   (map 'vector (lambda (point)
                  (mark point object))
        points))
 
-(defun mark-xy (x y &optional (object (circle)))
+(defun mark-xy (x y &optional (object *default-mark*))
   (mark (point x y) object))
 
-(defun marks-xy (xs ys &optional (object (circle)))
+(defun marks-xy (xs ys &optional (object *default-mark*))
   "Marks with given OBJECT at (X,Y) pairs.."
   (map 'vector (lambda (x y)
                  (mark (point x y) object))

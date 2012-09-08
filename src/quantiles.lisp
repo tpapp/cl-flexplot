@@ -102,3 +102,21 @@ FUNCTION is called on the X coordinates, and can be used for QQ plots."
                (lines (map 'vector #'qy index-ys) stroke))
              separate
              drop)))
+
+
+
+;;; quantiles for marking uncertainty
+
+(defstruct (q5-y (:constructor q5-y%))
+  x y1 y2 y3 y4 y5 mark stroke-style)
+
+(defun q5-y (x ys &key (mark *default-mark*) (stroke-style *stroke-style*))
+  (let+ ((#(y1 y2 y3 y4 y5) ys))
+    (q5-y% :x x :y1 y1 :y2 y2 :y3 y3 :y4 y4 :y5 y5
+           :mark mark :stroke-style stroke-style)))
+
+(define-expansion (da q5-y :use-for-bounding-box t)
+  (let+ (((&structure-r/o q5-y- mark x y1 y2 y3 y4 y5 stroke-style) q5-y))
+    (list (segment-xy x y1 x y2 stroke-style)
+          (segment-xy x y4 x y5 stroke-style)
+          (mark-xy x y3 mark))))
