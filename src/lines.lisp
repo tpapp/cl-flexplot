@@ -24,6 +24,12 @@
 (defun lines-xy (xs ys &optional (style *stroke-style*))
   (lines (map 'vector #'point xs ys) style))
 
+(defun segment (p1 p2 &optional (style *stroke-style*))
+  (lines (list p1 p2) style))
+
+(defun segment-xy (x1 y1 x2 y2 &optional (style *stroke-style*))
+  (segment (point x1 y1) (point x2 y2) style))
+
 
 ;;; guides
 

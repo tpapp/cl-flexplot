@@ -38,4 +38,6 @@
    :mark-xy
    :label
    :*label-color*
-   :lines-xy))
+   :lines-xy
+   :segment
+   :segment-xy))
