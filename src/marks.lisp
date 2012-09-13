@@ -2,36 +2,6 @@
 
 (in-package #:cl-flexplot)
 
-;;;
-
-(defstruct (mark (:constructor mark (point object)))
-  (point nil :type point :read-only t)
-  (object nil :read-only t))
-
-(defmethod object-points ((mark mark))
-  (mark-point mark))
-
-(defmethod render ((da drawing-area) (mark mark))
-  (let+ (((&structure-r/o mark- point object) mark))
-    (render (origin-drawing-area da point) object)))
-
-(defparameter *default-mark* (circle) "Default mark.")
-
-(defun marks (points &optional (object *default-mark*))
-  "Marks with given OBJECT at POINTS."
-  (map 'vector (lambda (point)
-                 (mark point object))
-       points))
-
-(defun mark-xy (x y &optional (object *default-mark*))
-  (mark (point x y) object))
-
-(defun marks-xy (xs ys &optional (object *default-mark*))
-  "Marks with given OBJECT at (X,Y) pairs.."
-  (map 'vector (lambda (x y)
-                 (mark (point x y) object))
-       xs ys))
-
 ;;;; circles
 
 (defparameter *circle-size* 3)
@@ -66,3 +36,33 @@
   (let+ (((&structure-r/o label- color text) label))
     (pgf-set-color color)
     (pgf-text (project da +origin+) text)))
+
+;;; marks that wrap these objects
+
+(defparameter *default-mark* (circle) "Default mark.")
+
+(defstruct (mark (:constructor mark (point object)))
+  (point nil :type point :read-only t)
+  (object nil :read-only t))
+
+(defmethod object-points ((mark mark))
+  (mark-point mark))
+
+(defmethod render ((da drawing-area) (mark mark))
+  (let+ (((&structure-r/o mark- point object) mark))
+    (render (origin-drawing-area da point) object)))
+
+(defun marks (points &optional (object *default-mark*))
+  "Marks with given OBJECT at POINTS."
+  (map 'vector (lambda (point)
+                 (mark point object))
+       points))
+
+(defun mark-xy (x y &optional (object *default-mark*))
+  (mark (point x y) object))
+
+(defun marks-xy (xs ys &optional (object *default-mark*))
+  "Marks with given OBJECT at (X,Y) pairs.."
+  (map 'vector (lambda (x y)
+                 (mark (point x y) object))
+       xs ys))
