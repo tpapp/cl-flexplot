@@ -34,6 +34,11 @@ ONBJECT-POINTS instead), but containers or plotting objects should.")
       ;; intervals in the abs/rel space
       (make-bounding-box :x (extend-interval x (rel-part x-o))
                          :y (extend-interval y (rel-part y-o)))))
+  (:method ((box bounding-box) (other-box bounding-box))
+    (let+ (((&bounding-box-r/o x y) box)
+           ((&bounding-box-r/o x-o y-o) other-box))
+      (make-bounding-box :x (extend-interval x x-o)
+                         :y (extend-interval y y-o))))
   (:method ((box bounding-box) object)
     (extend-bounding-box box (object-points object))))
 
