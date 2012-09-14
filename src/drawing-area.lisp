@@ -38,9 +38,10 @@
   (linear-projection domain))
 
 (defmethod project ((projection linear-projection) coordinate)
-  (let+ (((&structure-r/o linear-projection- offset coefficient) projection)
-         ((&flex rel abs) coordinate))
-    (flex (+ offset (* coefficient rel)) abs)))
+  (let+ (((&structure-r/o linear-projection- offset coefficient) projection))
+    (flex-transform-relative coordinate
+                             (lambda (relative)
+                               (+ offset (* coefficient relative))))))
 
 (defmethod domain ((projection linear-projection))
   (linear-projection-domain projection))
@@ -93,8 +94,8 @@ contained absolute coordinates."
   (let+ (((&point p-x p-y) point)
          ((&structure-r/o origin-drawing-area- x y) da))
     (check-types (p-x p-y) real)
-    (point (flex+ x (absolute p-x))
-           (flex+ y (absolute p-y)))))
+    (point (flex-project x x p-x)
+           (flex-project y y p-y))))
 
 
 

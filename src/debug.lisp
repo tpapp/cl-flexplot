@@ -17,8 +17,8 @@ one visually."
     (rgb red green blue)))
 
 (defgeneric random-tint (object)
-  (:documentation "Tint object (usually a frame or a collection of frames with
-  a random color.  Return the original object.  Useful for debugging.")
+  (:documentation "Tint object (usually a frame or a collection of frames)
+  with a random color.  Return the original object.  Useful for debugging.")
   (:method ((frame frame))
     (pgf-frame-rectangle frame)
     (pgf-set-fill-color (random-color))
@@ -29,4 +29,22 @@ one visually."
     array)
   (:method ((sequence sequence))
     (map nil #'random-tint sequence)
+    sequence))
+
+(defgeneric random-diagonals (object)
+  (:documentation "Draw diagonals in object (usually a frame or a collection
+  of frames) with a random color.  Return the original object.  Useful for
+  debugging.")
+  (:method ((frame frame))
+    (pgf-set-stroke-color (random-color))
+    (let+ (((&flet p (x y)
+              (project frame (point x y)))))
+      (pgf-lines (list (p 0 0) (p 1 1)))
+      (pgf-lines (list (p 0 1) (p 1 0))))
+    frame)
+  (:method ((array array))
+    (map nil #'random-diagonals (flatten-array array))
+    array)
+  (:method ((sequence sequence))
+    (map nil #'random-diagonals sequence)
     sequence))

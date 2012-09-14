@@ -22,7 +22,7 @@
    (size :initarg :size :initform 12)
    (color :initarg :color :initform +black+)))
 
-(defparameter *default-title-margin* (flex 0 20)
+(defparameter *default-title-margin* (em 1.5)
   "Default margin for titles.")
 
 (defgeneric title (object &key &allow-other-keys)
@@ -48,9 +48,8 @@ title."))
 (defmethod title ((object title-mixin) &key)
   (slot-value object 'title))
 
-(defmethod margin (orientation (object title-mixin))
-  (flex+ (margin orientation (slot-value object 'title))
-         (margin orientation object)))
+(defmethod margin flex+ (orientation (object title-mixin))
+  (margin orientation (slot-value object 'title)))
 
 (defmethod render-with-orientation (orientation frame (title title))
   (let+ (((&slots-r/o string color) title))
@@ -65,7 +64,7 @@ title."))
 
 ;;; axis
 
-(defclass axis-like (margin-mixin title-mixin simple-print-object-mixin)
+(defclass axis-like (title-mixin margin-mixin simple-print-object-mixin)
   ((mark-length :initarg :mark-length)
    (annotation-distance :initarg :annotation-distance)))
 
@@ -94,13 +93,13 @@ title."))
     (lambda (interval)
       (interval-hull (list hull interval)))))
 
-(defparameter *axis-margin* (orientation-dependent (flex 0 45) (flex 0 35))
+(defparameter *axis-margin* (orientation-dependent (em 2.5) (em 1.5))
   "Default decoration margin for axes.")
 
-(defparameter *axis-mark-length* (absolute 3)
+(defparameter *axis-mark-length* (pt 3)
   "Length of tickmarks.")
 
-(defparameter *axis-annotation-distance* (absolute 6)
+(defparameter *axis-annotation-distance* (pt 6)
   "Distance of annotation from axis line.")
 
 (defparameter *axis-marks-number* 5

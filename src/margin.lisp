@@ -8,14 +8,15 @@
 When dividing up frames, the renderer queries the object for the desired
 margin size using MARGIN."))
 
+(define-method-combination flex+ :identity-with-one-argument t)
+
 (defgeneric margin (orientation object)
   (:documentation "Return the desired margin size when OBJECT is rendered
 using the given orientation.")
-  (:method (orientation object)
-    (orientation orientation object))
-  (:method (orientation (m margin-mixin))
-    (margin orientation (slot-value m 'margin)))
-  (:method (orientation (list list))
+  (:method-combination flex+)
+  (:method flex+ (orientation (m margin-mixin))
+    (orientation orientation (slot-value m 'margin)))
+  (:method flex+ (orientation (list list))
     (reduce #'flex+ list :key (curry #'margin orientation))))
 
 (defun max-margin (orientation objects)
@@ -29,7 +30,8 @@ using the given orientation.")
   (:documentation "FIXME"))
 
 (defun side (orientation frame replacement-frame object)
-  "Split off a margin, render the object in it, and return the remaining frame."
+  "Split off a margin, transform it using replacement-frame, render the object
+in it, and return the remaining frame."
   (let+ (((&values side remainder) (split2 frame orientation
                                            (margin orientation object))))
     (render-with-orientation orientation

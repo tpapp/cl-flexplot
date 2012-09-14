@@ -8,78 +8,93 @@
 ;;; interpreted as a relative coordinate with a 0 absolute component.
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (defstruct (flex (:constructor flex (relative absolute)))
+  (defstruct (flex (:constructor flex (relative &key (pt 0) (em 0))))
     "A pair of relative (interpreted on [0,1]) and absolute coordinates."
     (relative nil :type real :read-only t)
-    (absolute nil :type real :read-only t)))
+    (pt nil :type real :read-only t)
+    (em nil :type real :read-only t)))
 
 (deftype coordinate ()
   "Coordinate type used in the CL-FLEXPLOT library."
   '(or real flex))
 
-(defgeneric rel-part (coordinate)
-  (:documentation "Return the absolute part of a coordinate.")
-  (:method ((flex flex))
-    (flex-relative flex))
-  (:method ((real real))
-    real))
+(declaim (inline ensure-flex pt em))
 
-(defgeneric abs-part (coordinate)
-  (:documentation "Return the absolute part of a coordinate.")
-  (:method ((flex flex))
-    (flex-absolute flex))
-  (:method ((real real))
-    0))
+(defun ensure-flex (flex-or-real)
+  "Return argument converted into a FLEX coordinate if necessary."
+  (aetypecase flex-or-real
+    (flex it)
+    (real (flex it))))
 
-(defun absolute (abs-part)
-  "Convenience function for creating an absolute coordinate."
-  (flex 0 abs-part))
+(defun pt (pt)
+  "Shorthand for creating FLEX coordinates with only a PT part."
+  (flex 0 :pt pt))
+
+(defun em (em)
+  "Shorthand for creating FLEX coordinates with only a EM part."
+  (flex 0 :em em))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (define-let+-expansion (&flex (rel abs) :value-var value :body-var body)
+  (define-let+-expansion (&flex (relative pt em) :value-var value :body-var body)
     "LET+ clause for FLEX coordinates, also accepting reals."
-    `(let ((,rel (rel-part ,value))
-           (,abs (abs-part ,value)))
-       ,@body)))
+    (with-unique-names (value-var)
+      `(let* ((,value-var (ensure-flex ,value))
+              (,relative (flex-relative ,value-var))
+              (,pt (flex-pt ,value-var))
+              (,em (flex-em ,value-var)))
+         ,@body))))
 
-(define-constant +flex-zero+ (flex 0 0) :test #'equalp)
+(define-constant +flex-zero+ (flex 0) :test #'equalp)
+(define-constant +flex-unit+ (flex 1 :pt 1 :em 1) :test #'equalp)
 
-(defun flex+ (flex &rest other)
-  (let+ (((&flex rel abs) flex))
-    (mapc (lambda+ ((&flex r a))
-            (incf rel r)
-            (incf abs a))
-          other)
-    (flex rel abs)))
+(defmethod make-load-form ((flex flex) &optional environment)
+  (declare (ignore environment))
+  (let+ (((&flex relative pt em) flex))
+    `(flex ,relative :pt ,pt :em ,em)))
 
-(defun flex- (flex &rest other)
-  (let+ (((&flex rel abs) flex))
-    (mapc (lambda+ ((&flex r a))
-            (decf rel r)
-            (decf abs a))
-          other)
-    (flex rel abs)))
+;;; operations on FLEX coordinates
 
-(defun flex-max (flex &rest other)
-  (let+ (((&flex rel abs) flex))
-    (mapc (lambda+ ((&flex r a))
-            (maxf rel r)
-            (maxf abs a))
-          other)
-    (flex rel abs)))
+(defmacro define-flex-reduction (name operator)
+  `(defun ,name (flex &rest other)
+     ,(format nil "Apply ~A to arguments for each component of the arguments ~
+                   (converted to FLEX if necessary)." operator)
+     (let+ (((&flex relative pt em) flex))
+       (loop for o in other
+             do (let+ (((&flex o-relative o-pt o-em) o))
+                  (setf relative (,operator relative o-relative)
+                        pt (,operator pt o-pt)
+                        em (,operator em o-em))))
+       (flex relative :pt pt :em em))))
 
-(defun flex-project (a b point)
-  "Map POINT to between the coordinates A and B."
-  (let+ (((&flex a-rel a-abs) a)
-         ((&flex b-rel b-abs) b)
-         ((&flex p-rel p-abs) point)
-         ((&flet combine (a b) (+ (* a (1c p-rel)) (* b p-rel)))))
-    (flex (combine a-rel b-rel)
-          (+ (combine a-abs b-abs) p-abs))))
+(define-flex-reduction flex+ +)
+(define-flex-reduction flex- -)
+(define-flex-reduction flex-max max)
 
 (defun flex-apply (function &rest arguments)
-  (flex (apply function (mapcar #'rel-part arguments))
-        (apply function (mapcar #'abs-part arguments))))
+  "Apply FUNCTION to arguments elementwise, then return the resulting FLEX
+object."
+  (let+ (((&flet apply% (accessor)
+            (apply function
+                   (mapcar (compose accessor #'ensure-flex) arguments)))))
+    (flex (apply% #'flex-relative)
+          :pt (apply% #'flex-pt) :em (apply% #'flex-em))))
+
+(defun flex-project (a b point)
+  "Map POINT to between the coordinates A and B.  The semantics is defined as
+follows: the relative coordinate of POINT is used to determine the convex
+combination between A and B, to which the other coordinates are added."
+  (let+ (((&flex a-rel a-pt a-em) a)
+         ((&flex b-rel b-pt b-em) b)
+         ((&flex p-rel p-pt p-em) point)
+         ((&flet combine (a b) (+ (* a (1c p-rel)) (* b p-rel)))))
+    (flex (combine a-rel b-rel)
+          :pt (+ (combine a-pt b-pt) p-pt)
+          :em (+ (combine a-em b-em) p-em))))
+
+(defun flex-transform-relative (flex function)
+  "Transform the relative coordinate using FUNCTION."
+  (let+ (((&flex relative pt em) flex))
+    (flex (funcall function relative) :pt pt :em em)))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defstruct (point (:constructor point (x y)))
@@ -89,9 +104,9 @@
 (define-structure-let+ (point) x y)
 
 (defmethod latex-print ((point point))
-  (let+ (((&point-r/o (&flex x-r x-a) (&flex y-r y-a)) point))
+  (let+ (((&point-r/o (&flex x-r x-pt x-em) (&flex y-r y-pt y-em)) point))
     (latex
-      (:cc x-r x-a y-r y-a))))
+      (:cc x-r x-pt x-em y-r y-pt y-em))))
 
 (define-constant +origin+ (point 0 0) :test #'equalp
   :documentation "Origin.")

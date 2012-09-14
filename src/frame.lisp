@@ -5,13 +5,12 @@
 ;;; coordinate interval splitting
 
 (defstruct (flex-spacer
-            (:constructor flex-spacer (&optional (coordinate
-                                                  (flex 1 1)))))
+            (:constructor flex-spacer (&optional (coordinate +flex-unit+))))
   (coordinate nil :type coordinate))
 
 (defun split-flex-interval (lower upper divisions)
-  (let ((spacer +flex-zero+)
-        (non-spacer +flex-zero+))
+  (let+ ((spacer +flex-zero+)
+         (non-spacer +flex-zero+))
     (map 'nil
          (lambda (division)
            (atypecase division

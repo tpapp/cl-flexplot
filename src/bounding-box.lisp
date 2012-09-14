@@ -28,12 +28,13 @@ ONBJECT-POINTS instead), but containers or plotting objects should.")
     box)
   (:method ((box bounding-box) (object point))
     (let+ (((&bounding-box-r/o x y) box)
-           ((&point-r/o x-o y-o) object))
-      ;; NOTE currently the absolute part is ignored, should we do something
-      ;; about that?  NOTE should we write own library functions for extending
-      ;; intervals in the abs/rel space
-      (make-bounding-box :x (extend-interval x (rel-part x-o))
-                         :y (extend-interval y (rel-part y-o)))))
+           ((&point-r/o x-o y-o) object)
+           ((&flet coordinate (coordinate)
+              ;; NOTE currently the absolute part is ignored, should we do
+              ;; something about that?
+              (flex-relative (ensure-flex coordinate)))))
+      (make-bounding-box :x (extend-interval x (coordinate x-o))
+                         :y (extend-interval y (coordinate y-o)))))
   (:method ((box bounding-box) (other-box bounding-box))
     (let+ (((&bounding-box-r/o x y) box)
            ((&bounding-box-r/o x-o y-o) other-box))

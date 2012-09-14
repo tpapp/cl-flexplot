@@ -13,8 +13,9 @@
 \newcommand{\rc}[2]{\pgfpointadd%
   {\pgfpointscale{##1}{\pgfpoint{\ax}{0}}}%
   {\pgfpointscale{##2}{\pgfpoint{0}{\ay}}}}%
-\newcommand{\ac}[2]{\pgfpoint{##1pt}{##2pt}}%
-\newcommand{\cc}[4]{\pgfpointadd{\rc{##1}{##3}}{\ac{##2}{##4}}}%
+\newcommand{\ptc}[2]{\pgfpoint{##1pt}{##2pt}}%
+\newcommand{\emc}[2]{\pgfpoint{##1em}{##2em}}%
+\newcommand{\cc}[6]{\pgfpointadd{\pgfpointadd{\rc{##1}{##4}}{\ptc{##2}{##5}}}{\emc{##3}{##6}}}%
 \begin{pgfpicture}%
 \makeatletter%
 \input{#3}%

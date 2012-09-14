@@ -7,24 +7,30 @@
 ;;; basic layer
 
 (with-displayed-picture ()
+  ;; homogenous random color
   (random-tint +unit-frame+))
 
 (defparameter *3div* (make-sequence 'vector 3
                                     :initial-element (flex-spacer)))
 
 (with-displayed-picture ()
+  ;; 3x3 checked pattern, random colors
   (random-tint (split +unit-frame+ *3div* *3div*)))
 
 (with-displayed-picture ()
+  ;; 3 vertical bands, random colors
   (random-tint (split-h +unit-frame+ *3div*)))
 
 (with-displayed-picture ()
+  ;; 3 horizontal bands, random colors
   (random-tint (split-v +unit-frame+ *3div*)))
 
 (with-displayed-picture ()
+  ;; rectangle in the middle, random color, surrounded by background frame
   (random-tint (shrink +unit-frame+ 1/4)))
 
 (with-displayed-picture ()
+  ;; rectangle in the middle, with horizontal and vertical grid lines
   (let ((frame (shrink +unit-frame+ 1/4)))
     (random-tint frame)
     (loop for u from 0 to 1 by (/ 10)
@@ -36,8 +42,12 @@
 
 
 ;;; plotting layer
+;;;
+;;; testing primitives that plots are built from
 
 (with-displayed-picture ()
+  ;; rectangle in middle, grid lines, everything drawn using relative
+  ;; coordinates
   (let* ((frame (shrink +unit-frame+ 1/4))
          (drawing-area (make-drawing-area
                         frame
@@ -52,9 +62,34 @@
                                   (list (point -1 v) (point 1 v))))))))
 
 (with-displayed-picture ()
-  (let+ ((p (flex 0 10))
+  ;; plotting area split 5 ways
+  (let+ ((p (pt 10))
          (l (split5 +unit-frame+ p p)))
     (random-tint l)))
+
+(defstruct (margin-test (:constructor margin-test (title margin)))
+  title margin)
+
+(defmethod margin flex+ (orientation (margin-test margin-test))
+  (orientation orientation (margin-test-margin margin-test)))
+
+(defmethod render-with-orientation (orientation (frame frame)
+                                    (margin-test margin-test))
+  (declare (ignore orientation))
+  (pgf-set-stroke-style *stroke-style*)
+  (let+ (((&flet p (x y)
+            (project frame (point x y)))))
+    (pgf-set-color +black+)
+    (pgf-lines (list (p 0 0) (p 1 1)))
+    (pgf-lines (list (p 0 1) (p 1 0)))
+    (pgf-set-color +red+)
+    (pgf-text (p 0.5 0.5) (margin-test-title margin-test))))
+
+(with-displayed-picture ()
+  (sides :left +unit-frame+ +unit-frame+
+         (list* (margin-test "\\textbf{1}" (pt 50))
+                (margin-test "\\textbf{2}" (em 10))
+                (margin-test "\\textbf{rest}" (flex 40)))))
 
 ;; (with-displayed-picture ()
 ;;   (let+ (((center left bottom right top) (split5 +unit-frame+
@@ -72,17 +107,18 @@
 
 ;;; plots
 
-
 (displaying
+ ;; simple plot, 3 standard guides, line
  (plot
   (list
-   (lines (list (point 0.1 0)
-                (point 1 1)))
    (horizontal-guide 0.5)
    (vertical-guide 0.2)
-   (diagonal-guide))))
+   (diagonal-guide)
+   (lines (list (point 0.1 0)
+                (point 1 1))))))
 
 (displaying
+ ;; line and vertical band
  (plot
   (list
    (vertical-band (interval 0.3 0.8))
@@ -90,12 +126,14 @@
                 (point 0 1))))))
 
 (displaying
+ ;; sine function, with guide
  (plot
   (list
    (horizontal-guide 0)
    (lines (fx #'sin (interval (- pi) pi))))))
 
 (displaying
+ ;; cumulative sum of random numbers, series plot
  (plot
   (lines (ty (let* ((length 100)
                     (sum 0d0))
@@ -107,6 +145,7 @@
   :y-axis "cumulative sum"))
 
 (displaying
+ ;; 3 circles, testing mark
  (plot
   (let ((c (circle)))
     (list
@@ -115,6 +154,7 @@
      (mark +origin+ c)))))
 
 (displaying
+ ;; marks along a circle
  (plot
   (map 'list
        (let ((c (circle)))
@@ -127,8 +167,8 @@
 
 (require :cl-random)
 
-(let* ((y (generate-array 500 (lambda () (+ (random 1d0) (random 1d0)))))
-       (qq ))
+;;; QQ plot
+(let* ((y (generate-array 500 (lambda () (+ (random 1d0) (random 1d0))))))
   (displaying (plot
                (list
                 (diagonal-guide)
@@ -136,20 +176,21 @@
                :x-axis "equivalent normal"
                :y-axis "quantile")))
 
+;;; error bars
 (displaying
-    (plot
-     (let ((index 0))
-       (map 'list
-            (lambda (center w1 w2)
-              (prog1 (q5-y index
-                           (vector (- center w2) (- center w1)
-                                   center
-                                   (+ center w1) (+ center w2))
-                           :mark (label (format nil "~D" index)))
-                (incf index)))
-            (numseq 0 5 :length 6)
-            (numseq 0.4 0.7 :length 6)
-            (numseq 0.9 2 :length 6)))))
+ (plot
+  (let ((index 0))
+    (map 'list
+         (lambda (center w1 w2)
+           (prog1 (q5-y index
+                        (vector (- center w2) (- center w1)
+                                center
+                                (+ center w1) (+ center w2))
+                        :mark (label (format nil "~D" index)))
+             (incf index)))
+         (numseq 0 5 :length 6)
+         (numseq 0.4 0.7 :length 6)
+         (numseq 0.9 2 :length 6)))))
 
 
 ;;; functions

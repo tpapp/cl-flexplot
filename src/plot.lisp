@@ -4,10 +4,10 @@
 
 
 
-(defparameter *outer-gap* (flex 0 3)
+(defparameter *outer-gap* (pt 3)
   "Gap between axes and drawing area clip box.")
 
-(defparameter *inner-gap* (flex 0 8)
+(defparameter *inner-gap* (pt 8)
   "Gap between drawing area and its clip box.")
 
 (defclass plot ()
