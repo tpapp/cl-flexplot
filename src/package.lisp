@@ -50,4 +50,6 @@
    :strut
    :+dash-solid+
    :+dash-dot+
-   :+dash-line+))
+   :+dash-line+
+   :pt
+   :em))
