@@ -1,13 +1,13 @@
 ;;;; package.lisp
 
 (defpackage #:cl-flexplot
+  (:nicknames #:flex)
   (:use #:cl #:anaphora #:alexandria #:cl-colors #:cl-num-utils #:fare-mop
         #:iterate #:let-plus)
   (:shadowing-import-from #:cl-num-utils #:mean #:variance #:median ; also in ALEXANDRIA
                           #:sum)        ; also in ITERATE
   (:export
-   :displaying)
-  (:export
+   :displaying
    :plot
    :lines
    :fx
