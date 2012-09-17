@@ -54,4 +54,5 @@
    :pt
    :em)
   (:export
-   :*fill-style*))
+   :*fill-style*
+   :diagonal-guide))
