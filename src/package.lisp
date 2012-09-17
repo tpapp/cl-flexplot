@@ -52,4 +52,6 @@
    :+dash-dot+
    :+dash-line+
    :pt
-   :em))
+   :em)
+  (:export
+   :*fill-style*))
