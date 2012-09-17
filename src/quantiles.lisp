@@ -120,3 +120,17 @@ FUNCTION is called on the X coordinates, and can be used for QQ plots."
     (list (segment-xy x y1 x y2 stroke-style)
           (segment-xy x y4 x y5 stroke-style)
           (mark-xy x y3 mark))))
+
+(defstruct (q5-x (:constructor q5-x%))
+  x1 x2 x3 x4 x5 y mark stroke-style)
+
+(defun q5-x (xs y &key (mark *default-mark*) (stroke-style *stroke-style*))
+  (let+ ((#(x1 x2 x3 x4 x5) xs))
+    (q5-x% :x1 x1 :x2 x2 :x3 x3 :x4 x4 :x5 x5 :y y
+           :mark mark :stroke-style stroke-style)))
+
+(define-expansion (da q5-x :use-for-bounding-box t)
+  (let+ (((&structure-r/o q5-x- mark x1 x2 x3 x4 x5 y stroke-style) q5-x))
+    (list (segment-xy x1 y x2 y stroke-style)
+          (segment-xy x4 y x5 y stroke-style)
+          (mark-xy x3 y mark))))

@@ -54,4 +54,5 @@
    #:pt
    #:em
    #:*fill-style*
-   #:diagonal-guide))
+   #:diagonal-guide
+   #:q5-x))
