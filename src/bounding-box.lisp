@@ -49,6 +49,11 @@ of plotting objects or a single plotting object.")
   (:method (object)
     (extend-bounding-box (make-bounding-box :x nil :y nil) object)))
 
+(defun square-bounding-box (&rest objects)
+  (let+ (((&bounding-box-r/o x y) (bounding-box objects))
+         (h (interval-hull (list x y))))
+    (make-bounding-box :x h :y h)))
+
 (defun nonempty-bounding-box? (bounding-box)
   (let+ (((&structure-r/o bounding-box- x y) bounding-box))
     (and (typep x 'finite-interval)
@@ -66,12 +71,15 @@ of plotting objects or a single plotting object.")
                                 (object non-extending-object-mixin))
   box)
 
-(defstruct (strut (:constructor strut (&rest objects)))
+(defstruct (strut (:constructor make-strut%))
   "Objects are only used for extending the bounding box, otherwise they are
 not rendered."
-  (objects nil :type list :read-only t))
+  (bounding-box nil :type bounding-box :read-only t))
 
 (defmethod render (target (strut strut)))
 
 (defmethod extend-bounding-box ((box bounding-box) (strut strut))
-  (extend-bounding-box box (strut-objects strut)))
+  (extend-bounding-box box (strut-bounding-box strut)))
+
+(defun strut (&rest objects)
+  (make-strut% :bounding-box (bounding-box objects)))

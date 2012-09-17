@@ -55,4 +55,7 @@
    #:em
    #:*fill-style*
    #:diagonal-guide
-   #:q5-x))
+   #:q5-x)
+  (:export
+   :strut
+   :square-bounding-box))
