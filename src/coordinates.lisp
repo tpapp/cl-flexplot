@@ -2,14 +2,13 @@
 
 (in-package #:cl-flexplot)
 
-;;; coordinates
-;;;
-;;; FLEXs have a /relative/ and an /absolute/ component.  REALs are
-;;; interpreted as a relative coordinate with a 0 absolute component.
+;;; type definitions and coordinate creation functions
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defstruct (flex (:constructor flex (relative &key (pt 0) (em 0))))
-    "A pair of relative (interpreted on [0,1]) and absolute coordinates."
+    "A triplet of coordinates: RELATIVE is interpreted on the [0,1]
+interval (depending on the context), then PT and EM are added (specified in
+pt and em units, respectively)."
     (relative nil :type real :read-only t)
     (pt nil :type real :read-only t)
     (em nil :type real :read-only t)))
@@ -35,7 +34,8 @@
   (flex 0 :em em))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (define-let+-expansion (&flex (relative pt em) :value-var value :body-var body)
+  (define-let+-expansion (&flex (relative pt em)
+                          :value-var value :body-var body)
     "LET+ clause for FLEX coordinates, also accepting reals."
     (with-unique-names (value-var)
       `(let* ((,value-var (ensure-flex ,value))
@@ -44,8 +44,10 @@
               (,em (flex-em ,value-var)))
          ,@body))))
 
-(define-constant +flex-zero+ (flex 0) :test #'equalp)
-(define-constant +flex-unit+ (flex 1 :pt 1 :em 1) :test #'equalp)
+(define-constant +flex-zero+ (flex 0) :test #'equalp
+  :documentation "Flex coordinate for the origin.")
+(define-constant +flex-unit+ (flex 1 :pt 1 :em 1) :test #'equalp
+  :documentation "Unit flex coordinate.")
 
 (defmethod make-load-form ((flex flex) &optional environment)
   (declare (ignore environment))
@@ -96,8 +98,11 @@ combination between A and B, to which the other coordinates are added."
   (let+ (((&flex relative pt em) flex))
     (flex (funcall function relative) :pt pt :em em)))
 
+;;; points
+
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defstruct (point (:constructor point (x y)))
+    "Point (a coordinate pair)."
     (x nil :type coordinate)
     (y nil :type coordinate)))
 
@@ -108,4 +113,4 @@ combination between A and B, to which the other coordinates are added."
     (latex-command "cc" x-r x-pt x-em y-r y-pt y-em)))
 
 (define-constant +origin+ (point 0 0) :test #'equalp
-  :documentation "Origin.")
+  :documentation "Coordinates of the origin.")
