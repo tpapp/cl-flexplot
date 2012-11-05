@@ -27,55 +27,55 @@
     (:bottom-right "top,left")))
 
 (defun pgf-text (position text &key align rotate)
-  (latex
-    (:pgftext &optional
-              (latex "at=" position
-                (when rotate
-                  (latex ",rotate=" rotate))
-                (when align
-                  (let ((align-string (pgf-text-align-string align)))
-                    (latex "," align-string))))
-              text)
-    :/))
+  (latex-command* "pgftext"
+                  (latex-cat "at=" position
+                             (when rotate
+                               (latex-cat ",rotate=" rotate))
+                             (when align
+                               (let ((align-string (pgf-text-align-string align)))
+                                 (latex-cat "," align-string))))
+                  text))
 
 (defun pgf-path-move-to (position)
-  (latex (:pgfpathmoveto position) :/))
+  (latex-command "pgfpathmoveto" position))
 
 (defun pgf-path-line-to (position)
-  (latex (:pgfpathlineto position) :/))
+  (latex-command "pgfpathlineto" position))
 
 (defun pgf-rectangle (corner1 corner2)
-  (latex (:pgfpathrectanglecorners corner1 corner2) :/))
+  (latex-command "pgfpathrectanglecorners" corner1 corner2))
 
 (defun pgf-path-circle (center radius)
-  (latex (:pgfpathcircle center (latex radius "pt")) :/))
+  (latex-command "pgfpathcircle" center (latex-pt radius)))
 
 (defun pgf-stroke ()
-  (latex (:pgfusepath "stroke") :/))
+  (latex-command "pgfusepath" "stroke"))
 
 (defun pgf-set-color (color)
   (let+ (((&rgb red green blue) (as-rgb color)))
-    (latex (:pgfsys@color@rgb red green blue))))
+    (latex-command "pgfsys@color@rgb" red green blue)))
 
 (defun pgf-set-fill-color (color)
   (let+ (((&rgb red green blue) (as-rgb color)))
-    (latex (:pgfsys@color@rgb@fill red green blue))))
+    (latex-command "pgfsys@color@rgb@fill" red green blue)))
 
 (defun pgf-set-stroke-color (color)
   (let+ (((&rgb red green blue) (as-rgb color)))
-    (latex (:pgfsys@color@rgb@stroke red green blue))))
+    (latex-command "pgfsys@color@rgb@stroke" red green blue)))
 
 (defun pgf-set-line-width (width)
-  (latex (:pgfsetlinewidth (latex width "pt"))))
+  (latex-command "pgfsetlinewidth" (latex-pt width)))
 
 (defun pgf-set-dash (dimensions &optional (phase 0))
   (assert (divides? (length dimensions) 2) ()
           "Dash dimensions need to have an even length.")
-  (latex (:pgfsetdash (loop for dimension in dimensions
-                            do (latex "{" dimension "pt" "}")) phase) :/))
+  (latex-command "pgfsetdash"
+                 (loop for dimension in dimensions
+                       do (latex-cat "{" dimension "}"))
+                 phase))
 
 (defun pgf-fill ()
-  (latex (:pgfusepath "fill") :/))
+  (latex-command "pgfusepath" "fill"))
 
 (defun print-comma-separated (stream &rest strings)
   (let ((first t))
@@ -87,16 +87,17 @@
                (princ string stream)))))
 
 (defun pgf-use-path (&key fill stroke clip)
-  (latex (:pgfusepath (print-comma-separated *latex-output*
-                                             (when fill "fill")
-                                             (when stroke "stroke")
-                                             (when clip "clip")))))
+  (latex-command "pgfusepath"
+                 (latex-comma-separated
+                  (when fill "fill")
+                  (when stroke "stroke")
+                  (when clip "clip"))))
 
 (defun pgf-reset-bounding-box ()
-  (latex (:pgfresetboundingbox) :/))
+  (latex-command "pgfresetboundingbox"))
 
 (defun pgf-use-as-bounding-box ()
-  (latex (:pgfusepath "use as bounding box") :/))
+  (latex-command "pgfusepath" "use as bounding box"))
 
 (defmacro pgf-scope (&body body)
   `(with-latex-environment "pgfscope" ,@body))

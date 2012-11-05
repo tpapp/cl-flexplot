@@ -105,8 +105,7 @@ combination between A and B, to which the other coordinates are added."
 
 (defmethod latex-print ((point point))
   (let+ (((&point-r/o (&flex x-r x-pt x-em) (&flex y-r y-pt y-em)) point))
-    (latex
-      (:cc x-r x-pt x-em y-r y-pt y-em))))
+    (latex-command "cc" x-r x-pt x-em y-r y-pt y-em)))
 
 (define-constant +origin+ (point 0 0) :test #'equalp
   :documentation "Origin.")

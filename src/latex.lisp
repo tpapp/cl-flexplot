@@ -3,177 +3,157 @@
 (in-package #:cl-flexplot)
 
 ;;; Generating LaTeX output
-;;;
-;;; Low-level DSL for emitting LaTeX code to *LATEX-OUTPUT*.  The main entry
-;;; point is the LATEX macro.
 
 ;;; FIXME indentation, pretty printer
 ;;; FIXME simplification & optimization
 ;;; FIXME work on syntax
 ;;; FIXME documentation
 
-(defvar *latex-output* *standard-output*)
+(defvar *latex-output* *standard-output*
+  "The stream where LaTeX code is sent.")
 
-(defmacro with-latex-output ((filespec &key (if-exists :supersede)) &body body)
+(defmacro with-latex-output ((filespec &key (if-exists :supersede))
+                             &body body)
+  "Emit LaTeX code to FILESPEC."
   `(with-open-file (*latex-output* ,filespec
                                    :direction :output
                                    :if-exists ,if-exists
                                    :if-does-not-exist :create)
      ,@body))
 
-;;; compiler
 
-(defstruct latex-compiler
-  "Internal compiler for the LaTeX macro."
-  (operations (make-array 10 :adjustable t :fill-pointer 0) :type vector))
+(defun latex-format (control-string &rest arguments)
+  (apply #'format *latex-output* control-string arguments))
 
-(defun add-operation (latex-compiler operation)
-  "Add operation to LATEX-COMPILER."
-  (vector-push-extend operation
-                      (latex-compiler-operations latex-compiler) 10))
 
-(defgeneric operation->code (operation)
-  (:documentation "Return a form that implements OPERATION."))
 
-(defmacro define-op (name slots &body op->code-body)
-  (let ((struct-name (symbolicate '#:op- name))
-        (slot-names (mapcar (compose #'first #'ensure-list) slots))
-        (op-var (gensym "OPERATION"))
-        (compiler (gensym "PROCESSOR")))
-    `(progn
-       (defstruct (,struct-name (:constructor ,struct-name ,slot-names))
-         ,@slots)
-       (defmethod operation->code ((,op-var ,struct-name))
-         (let+ (((&structure-r/o ,(symbolicate struct-name #\-)
-                                 ,@(mapcar (compose #'first #'ensure-list)
-                                           slots))
-                 ,op-var))
-           ,@op->code-body))
-       (defun ,name (,compiler ,@slot-names)
-         (add-operation ,compiler (,struct-name ,@slot-names))))))
+(defvar *latex-pretty* t
+  "When not NIL, whitespace (newlines, indentation, ...) is added to LaTeX
+code in order to aid debugging it directly.")
 
-(define-op raw-string (string)
-  `(princ ,string *latex-output*))
+(defvar *latex-nesting* 0
+  "Level of nesting within LaTeX commands.  When *LATEX-PRETTY*, the first
+  level is separated by newlines.")
 
-(define-op newline ()
-  '(terpri *latex-output*))
+(defmacro with-latex-nesting (&body body)
+  "Increase the level of nesting."
+  `(let ((*latex-nesting* (1+ *latex-nesting*)))
+     ,@body))
 
-(define-op embed-value (value)
-  `(latex-print ,value))
+(defun latex-newline ()
+  "Newline for the top level of nesting."
+  (when *latex-pretty*
+    (unless (plusp *latex-nesting*)
+      (terpri *latex-output*))))
 
-(define-op embed-code (code)
-  code)
+(defvar *latex-indent* 0
+  "Indentation for commands on the top level of nesting.")
 
-;;; auxiliary formatting functions
+(defmacro with-latex-indent (&body body)
+  "Increase indentation."
+  `(let ((*latex-indent* (1+ *latex-indent*)))
+     ,@body))
 
-(defun latex-command (keyword)
-  (check-type keyword keyword)
-  (format nil "\\~(~A~)" keyword))
+(defun latex-indent ()
+  "Indent with spaces when applicable (*LATEX-PRETTY* and top level of
+nesting."
+  (when *latex-pretty*
+    (unless (plusp *latex-nesting*)
+      (loop repeat (* 2 *latex-indent*)
+            do (latex-format " ")))))
 
-(defgeneric latex-literal (value)
-  (:documentation "Return a string representing VALUE in LaTeX.  Useful for
-  converting constants at compile time.")
-  (:method ((number real))
-    ;; note that with the standard libraries, PGF won't use more than 5 digits
-    ;; anyway, which is plenty for our purposes as
-    (etypecase number
-      (integer (format nil "~A" number))
-      (real (format nil "~,5F" number))))
-  (:method ((string string))
-    string))
+;;;
 
 (defgeneric latex-print (object)
-  (:documentation "Print LaTeX representation of OBJECT to *LATEX-OUTPUT*.")
-  (:method (object)
-    (princ (latex-literal object) *latex-output*)))
+  (:documentation "Print LaTeX representation of OBJECT.")
+  (:method ((object null)))
+  (:method ((number real))
+    ;; note that with the standard libraries, PGF won't use more than 5 digits
+    ;; anyway, which is plenty for our purposes.
+    (etypecase number
+      (integer (latex-format "~A" number))
+      (real (latex-format "~,5F" number))))
+  (:method ((string string))
+    (latex-format string)))
 
-;;; recognized forms
+;;; macro construction and semantics
 
-(defgeneric special-form-closure (first)
-  (:method (first)
-    nil))
+(defun latex-sexp-form (form)
+  "This function determines what happens to a SEXP in a LATEX-... macro.
+Return a form that can be pasted into the expansion body."
+  (if (listp form)
+      form
+      `(latex-print ,form)))
 
-(defmacro define-latex-special-op (name (processor &rest arguments)
-                                   &body body)
-  (with-unique-names (first)
-    `(defmethod special-form-closure ((,first (eql ',name)))
-       (lambda (,processor ,@arguments)
-         ,@body))))
+(defun latex-argument-form (argument &optional optional?)
+  "Return a form for emitting an argument, wrapped in braces or brackets (when
+OPTIONAL?)."
+  (let+ (((&values left right) (if optional?
+                                   (values "[" "]")
+                                   (values "{" "}"))))
+    `(progn
+       (latex-print ,left)
+       ,(latex-sexp-form argument)
+       (latex-print ,right))))
 
-(define-latex-special-op :print (processor value)
-  (embed-value processor value))
+;;; LaTeX macros
 
-(defun maybe-process-atom (processor form)
-  (when (atom form)
-    (cond
-      ((eq form :/) (newline processor))
-      ((keywordp form) (raw-string processor (latex-command form)))
-      ((symbolp form) (embed-value processor form))
-      ((constantp form)
-       (raw-string processor (latex-literal form)))
-      (t (error "Don't know how to process atom ~A." form)))
-    t))
+(defmacro latex-cat (&rest arguments)
+  "Emit the concatenated arguments."
+  `(progn
+     ,@(loop for argument in arguments
+             collect (latex-sexp-form argument))))
 
-(defun maybe-process-special (processor form)
-  (awhen (and (consp form) (special-form-closure (first form)))
-    (apply (special-form-closure (first form)) processor (rest form))
-    t))
+(defmacro latex-pt (length)
+  "Emit LENGTH as a dimension specified in points."
+  `(latex-cat ,length "pt"))
 
-(defun maybe-process-latex-cons (processor form)
-  (when (and (consp form) (keywordp (first form)))
-    (raw-string processor (latex-command (first form)))
-    (loop with optional? = nil
-          for argument in (rest form)
-          do (cond
-               ((eq argument '&optional)
-                (assert (not optional?) ()
-                        "Two consecutive &optional forms.")
-                (setf optional? t))
-               (t
-                (raw-string processor (if optional? "[" "{"))
-                (process processor argument)
-                (raw-string processor (if optional? "]" "}"))
-                (when optional?
-                  (setf optional? nil))))
-          finally (assert (not optional?) ()
-                          "No form following last &optional."))
-    t))
+(defun latex-command-name (name)
+  "Print the LaTeX command name, preceded by a backslash."
+  (check-type name string)
+  (latex-format "\\~A" name))
 
-(defun maybe-process-embedded-code (processor form)
-  (when (and (consp form) (not (keywordp (first form))))
-    (if (eq (first form) 'latex)        ; recognizing nesting
-        (mapc (curry #'process processor) (rest form))
-        (embed-code processor form))
-    t))
+(defmacro latex-command-arguments (&rest arguments)
+  "Emit arguments for a command."
+  `(progn
+     ,@(mapcar #'latex-argument-form arguments)))
 
-(defun process (processor form)
-  (cond
-    ((maybe-process-special processor form))
-    ((maybe-process-atom processor form))
-    ((maybe-process-latex-cons processor form))
-    ((maybe-process-embedded-code processor form))
-    (t (error "Don't know how to process ~A." form))))
+(defmacro latex-command (command &rest arguments)
+  "LaTeX command with arguments."
+  `(with-latex-nesting
+     (latex-indent)
+     (latex-command-name ,command)
+     (latex-command-arguments ,@arguments)
+     (latex-newline)))
 
-(defun sexp->operations (body)
-  (loop with compiler = (make-latex-compiler)
-        for form in body do (process compiler form)
-        finally (return (latex-compiler-operations compiler))))
+(defmacro latex-command* (command optional-argument &rest arguments)
+  "LaTeX command with an optional argument and other arguments."
+  `(with-latex-nesting
+     (latex-indent)
+     (latex-command-name ,command)
+     ,(latex-argument-form optional-argument t)
+     (latex-command-arguments ,@arguments)
+     (latex-newline)))
 
-(defun generate-code (operations)
-  (map 'list #'operation->code operations))
-
-(defmacro latex (&body body)
-  (let* ((operations (sexp->operations body)))
-    `(progn ,@(generate-code operations))))
-
-(defun math (string)
-  "STRING is interpreted as LaTeX code for (inline) math."
-  (format nil "$~A$" string))
+(defun latex-comma-separated (&rest arguments)
+  "Emit arguments formatted with LATEX-PRINT, separated by commas.  Omit
+NILs."
+  (let ((first t))
+    (loop for argument in arguments
+          do (when argument
+               (if first
+                   (setf first nil)
+                   (latex-format #\,))
+               (latex-print argument)))))
 
 (defmacro with-latex-environment (environment &body body)
   "Wrap BODY in the given LaTeX ENVIRONMENT (should be a string)."
   (check-type environment string)
   `(progn
-     (latex (:begin ,environment) :/)
-     (multiple-value-prog1 (progn ,@body)
-       (latex (:end ,environment) :/))))
+     (latex-command "begin" ,environment)
+     (multiple-value-prog1 (with-latex-indent ,@body)
+       (latex-command "end" ,environment))))
+
+(defun math (string)
+  "STRING is interpreted as LaTeX code for (inline) math."
+  (format nil "$~A$" string))
