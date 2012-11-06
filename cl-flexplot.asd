@@ -22,13 +22,13 @@
     :components ((:file "latex")
                  (:file "coordinates")
                  (:file "pgf")
+                 (:file "orientation")
                  (:file "frame")
                  (:file "external")))
    (:module "plot"
     :pathname #P"src/"
     :serial t
-    :components ((:file "orientation")
-                 (:file "margin")
+    :components ((:file "margin")
                  (:file "drawing-area")
                  (:file "bounding-box")
                  (:file "axis")

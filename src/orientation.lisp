@@ -2,8 +2,13 @@
 
 (in-package #:cl-flexplot)
 
+;;; Orientations are used for specifying the orientation of various objects
+;;; (eg axes) or as an argument to orientation-dependent transformations.
+;;; They also allow some quantities to depend on the orientation, for example
+;;; a margin may be different for horizontal and vertical axes.
+
 (deftype orientation ()
-  "(Axis) orientations."
+  "Valid orientations."
   '(member :top :left :bottom :right))
 
 (defun o-horizontal? (orientation)
@@ -28,7 +33,7 @@ orientations."
     (:bottom :top)))
 
 (defun o-orthogonal-pair (orientation)
-  "Return a pair of orthogonal orientations."
+  "Return a pair of orientations orthogonal to ORIENTATION."
   (if (o-horizontal? orientation)
       '(:bottom . :top)
       '(:left . :right)))
