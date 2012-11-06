@@ -2,12 +2,12 @@
 
 (in-package #:cl-flexplot)
 
-;;;; Axes, ticks, and scales
+;;; AXES, TICKS, and SCALES
 ;;;
 ;;; A SCALE is an object used directly in the plotting process.  It already
 ;;; contains all the information for plotting, including the projection, the
-;;; orientation, and all the tickmarks and annotations.  SCALEs are usually
-;;; automatically generated.
+;;; orientation, and all the tickmarks and annotations (in a TICKS object).
+;;; SCALEs are usually automatically generated.
 ;;;
 ;;; TICKS is a collection of tickmarks.
 ;;;
@@ -19,33 +19,39 @@
 
 (defclass title (simple-print-object-mixin margin-mixin)
   ((string :initarg :string)
-   (size :initarg :size :initform 12)
-   (color :initarg :color :initform +black+)))
+   (size :initarg :size)
+   (color :initarg :color))
+  (:documentation "Title (eg for an axis).  Use the function TITLE for
+creation."))
 
 (defparameter *default-title-margin* (em 1.5)
   "Default margin for titles.")
 
-(defgeneric title (object &key &allow-other-keys)
-  (:documentation "Create a title from OBJECT.")
-  (:method (string &rest keys)
-    (apply #'make-instance 'title :string string
-                                  :margin *default-title-margin* keys))
-  (:method ((n null) &key)
-    (make-instance 'title :string "" :margin 0))
-  (:method ((title title) &key)
+(defun title (string
+              &key (color +black+) (size 12) (margin *default-title-margin*))
+  "Return a TITLE with the given contents, style and margin."
+  (make-instance 'title :string string :size size :color color :margin margin))
+
+(defgeneric ensure-title (object)
+  (:documentation "Create a TITLE from OBJECT.")
+  (:method ((string string))
+    (title string))
+  (:method ((n null))
+    (title "" :margin 0))
+  (:method ((title title))
     title))
 
 (defclass title-mixin (simple-print-object-mixin)
   ((title :initarg :title :initform nil))
   (:documentation "Mixin class for objects which contain (or provide) a
-title."))
+TITLE."))
 
 (defmethod initialize-instance :after ((object title-mixin)
                                        &key &allow-other-keys)
   (let+ (((&slots title) object))
-    (setf title (title title))))
+    (setf title (ensure-title title))))
 
-(defmethod title ((object title-mixin) &key)
+(defmethod ensure-title ((object title-mixin))
   (slot-value object 'title))
 
 (defmethod margin flex+ (orientation (object title-mixin))
@@ -66,7 +72,9 @@ title."))
 
 (defclass axis-like (title-mixin margin-mixin simple-print-object-mixin)
   ((mark-length :initarg :mark-length)
-   (annotation-distance :initarg :annotation-distance)))
+   (annotation-distance :initarg :annotation-distance))
+  (:documentation "An object which contains information for the autogeneration
+of scales."))
 
 (defclass axis (axis-like)
   ((marks-number :initarg :marks-number)
@@ -74,10 +82,13 @@ title."))
              :documentation "An interval, or a function which is called on the
              bounding box.  Used to transform the interval obtained from the
              bounding box (NIL leaves it unaffected)."))
-  (:documentation "FIXME."))
+  (:documentation "An object which contains information for the autogeneration
+of _numeric_ scales.  Also see CATEGORIES."))
 
 (defgeneric transform-interval (object interval)
-  (:documentation "Transform interval using OBJECT (usually an axis).")
+  (:documentation "Transform interval using OBJECT (usually an axis).
+Interval transformations allow the adjustment of intervals derived from
+bounding boxes..")
   (:method ((axis axis) interval)
     (transform-interval (slot-value axis 'interval) interval))
   (:method ((interval interval) ignored)
@@ -88,7 +99,8 @@ title."))
     interval))
 
 (defun include (&rest objects)
-  "a closure that returns the interval-hull of its argument and objects."
+  "A closure that returns the interval-hull of its argument and objects.
+Useful for extending axis intervals."
   (let ((hull (interval-hull objects)))
     (lambda (interval)
       (interval-hull (list hull interval)))))
@@ -111,17 +123,17 @@ title."))
                   (annotation-distance *axis-annotation-distance*)
                   (marks-number *axis-marks-number*)
                   interval)
-  "Return an axis."
+  "Create an axis."
   (make-instance 'axis :title title :margin margin :mark-length mark-length
                        :annotation-distance annotation-distance
                        :marks-number marks-number :interval interval))
 
 (defgeneric ensure-axis (object)
   (:documentation "Return OBJECT converted to an axis (or a transformation) if
-  necessary.")
+necessary.")
   (:method (title)
     (axis title))
-  (:method ((axis axis-like))
+ (:method ((axis axis-like))
     axis))
 
 ;;;; ticks and scales
@@ -138,7 +150,11 @@ title."))
 rest."))
 
 (defgeneric transform-ticks (ticks transformation)
-  (:documentation "Transform ticks.  Use a list to chain them together.")
+  (:documentation "Transform ticks.
+
+:MARKS-ONLY only retains the tickmarks.
+
+A list of transformations chains the transformations.")
   (:method ((ticks ticks) (list list))
     (reduce #'transform-ticks list :from-end t :initial-value ticks))
   (:method ((ticks ticks) (transformation (eql :marks-only)))
@@ -164,13 +180,12 @@ rest."))
 
 
 
-;;; FIXME documentation
-
 (defclass scale (simple-print-object-mixin)
   ((projection :initarg :projection :reader projection)
    (ticks :initarg :ticks)
    (annotation-distance :initarg :annotation-distance))
-  (:documentation "FIXME"))
+  (:documentation "Scales contain the tickmarks (and related rendering
+  information) and the relevant projection for the drawing area."))
 
 (defparameter *scale-line-width* 0.5
   "Width of lines used when drainwg the tickmarks and the scale box.")
@@ -207,14 +222,13 @@ rest."))
   (pgf-stroke))
 
 (defgeneric generate-ticks (marks-number axis interval)
-  (:documentation "Return autogenerated TICKS, places in
-INTERVAL (approximately, extended if necessary -- the the limits may not
-coincide with those of INTERVAL), targeting MARKS-NUMBER tickmarks.  AXIS
-determines the "))
+  (:documentation "Return autogenerated TICKS, placed in INTERVAL
+\(approximately, extended if necessary -- the the limits may not coincide with
+those of INTERVAL), targeting MARKS-NUMBER tickmarks."))
 
 (defgeneric generate-scale (orientation axis interval)
   (:documentation "Generate a SCALE object mapping from INTERVAL, using the
-  AXIS specification.")
+AXIS specification.")
   (:method (orientation (axis axis) (interval interval))
     (let+ (((&slots-r/o annotation-distance marks-number) axis)
            (interval (transform-interval axis interval))
@@ -412,11 +426,12 @@ DIGITS-AFTER-DECIMAL gives the number of digits after the decimal point."
 
 (defclass categories (axis-like)
   ((annotations :initarg :annotations)
-   (padding :initarg :padding))
-  (:documentation "FIXME"))
+   (padding :initarg :padding :documentation "Padding on each side."))
+  (:documentation "Axes for categories.  Categories are mapped to integer
+coordinates starting at 0 (with padding on each end)."))
 
 (defparameter *categories-padding* 0.5
-  "FIXME")
+  "Default padding for categories.")
 
 (defun categories (title categories
                    &key (padding *categories-padding*)

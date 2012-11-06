@@ -58,11 +58,11 @@
       (scale-frame center)
       (sides4 sides
               graph-box
-              (cons (title y-axis) left-scale)
-              (cons (title x-axis) bottom-scale)
-              (cons (title y-other-axis)
+              (cons (ensure-title y-axis) left-scale)
+              (cons (ensure-title x-axis) bottom-scale)
+              (cons (ensure-title y-other-axis)
                     (transform-scale left-scale y-other-axis))
-              (cons (title x-other-axis)
+              (cons (ensure-title x-other-axis)
                     (transform-scale bottom-scale x-other-axis))))))
 
 
