@@ -1,9 +1,90 @@
-* cl-flexplot
+-----
+This is a pre-alpha release.  Bug reports and suggestions are welcome, but support is very limited.  The API may experience large changes.
+-----
 
-** The LaTeX package
+* Introduction
 
-put in =~/texmf=, using a symlink, TODO explain this
+=cl-flexplot= is a plotting library for Common Lisp that uses [[http://sourceforge.net/projects/pgf][PGF]] (a [[http://www.latex-project.org/][LaTeX]] package) as a backend.  Its name refers to the fact that the resulting plots are /flexible/ in the sense that they adjust to the desired size (more on this below).
+
+** Advantages
+
+- Plots use the text style of your document, allowing a harmonious integration between text and graphics, making the library ideal for scientific graphs in books and articles.
+
+- Flexible plots: you don't need to regenerate your plot files if you decide to change the size of your graphs or want to use the same plot in your slides and the main text of the article.
+
+- The full power of LaTeX is available in your plots, most importantly the ability to use mathematical expressions and formulas.
+
+** Disadvantages
+
+- LaTeX is necessary for /rendering/ plots --- you can generate plot files without LaTeX, but you won't be able to render or view them.  This may be inconvenient for some people because (1) they don't have LaTeX installed, (2) LaTeX compilation takes extra time.
+
+  In practice, LaTeX should not be very difficult to obtain (see eg [[http://www.tug.org/texlive/][TeX Live]], which has everything you need for the purposes of this library) and compiling time is trivial on a modern computer.
+
+- The generated plot files use a custom but portable format.  However, once you have generated the plot file, you can share it with others (eg your coauthor) without the need to include any CL code.
+
+** Prerequisites and installation
+
+You need a working LaTeX installation with [[http://sourceforge.net/projects/pgf][PGF]] and a =pdflatex= executable.  [[http://www.tug.org/texlive/][TeX Live]] has both.
+
+You also need a PDF viewer if you want to preview your plots.  *Note: currently the library uses =xpdf=, if this is inconvenient for you please report it as a bug and I will add otions for other PDF viewers.*
+
+You need to make the LaTeX package =flexplot.sty= available to LaTeX.  I would recommend that make a symlink in your TeX home directory (returned by =kpsewhich -var-value TEXMFHOME=) and run =mktexlsr=.  You can use the script =make-symlink= to automate this step.  If you create a symlink, you only need to do this once because the target will be automatically updated with new versions (if necessary).
+
+* Using the library
+
+** The LaTeX interface
+
+The library saves plots as LaTeX source, with the default extension =flexplot=.  In order to use these in a LaTeX document, you need to put
+#+BEGIN_SRC LaTeX
+\usepackage{flexplot}
+#+END_SRC
+in your document preamble.  Then you can include individual plots with
+#+BEGIN_SRC LaTeX
+\includeflexplot{width}{height}{filename.flexplot}
+#+END_SRC
+You can use any LaTeX length for the width and height (eg =0.5\textwidth=).
+
+** Saving plots to files
+
+Use =(render filespec plot-object)=.  For example,
+#+BEGIN_SRC lisp
+(render #P"/tmp/my-first-plot.flexplot"
+        (plot
+         (list
+          (horizontal-guide 0)
+          (lines (fx #'sin (interval (- pi) pi))))))
+#+END_SRC
+will save the result in =/tmp/my-first-plot.flexplot=.
+
+** Previewing plots
+
+Use =displaying= to display plot objects:
+#+BEGIN_SRC lisp
+(displaying
+ ;; cumulative sum of random numbers, series plot
+ (plot
+  (lines (ty (let* ((length 100)
+                    (sum 0d0))
+               (aprog1 (make-array length)
+                 (loop for index below length
+                       do (setf (aref it index) sum)
+                          (incf sum (random 1d0)))))))
+  :x-axis (math "t")
+  :y-axis "cumulative sum"))
+#+END_SRC
+Optional arguments allow you to select the file for saving the result, otherwise a temporary filename is generated.  When working with plots interactively, it is suggested that you use =displaying= and save the result when necessary.
+
+** Examples
+
+See the directory =examples/=.
+
+* Reporting bugs
+
+Please use the [[https://github.com/tpapp/cl-flexplot/issues][issue tracker]] on Github.
+
+For more general discussion, I usually read the =lisp-stat= Google group.
 
 * TODO
-** think about support rendering standalone PDFs
+** Think about support rendering standalone PDFs
 Currently the flexplot files are the actual output, PDFs are only for previewing.  But maybe the library could have more support for rendering them as a final output.
+** More documentation
