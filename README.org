@@ -45,7 +45,7 @@ You can use any LaTeX length for the width and height (eg =0.5\textwidth=).
 ** Saving plots to files
 
 Use =(render filespec plot-object)=.  For example,
-#+BEGIN_SRC lisp
+#+BEGIN_SRC Lisp
 (render #P"/tmp/my-first-plot.flexplot"
         (plot
          (list
@@ -57,7 +57,7 @@ will save the result in =/tmp/my-first-plot.flexplot=.
 ** Previewing plots
 
 Use =displaying= to display plot objects:
-#+BEGIN_SRC common-lisp
+#+BEGIN_SRC Lisp
 (displaying
  ;; cumulative sum of random numbers, series plot
  (plot
@@ -66,9 +66,7 @@ Use =displaying= to display plot objects:
                (aprog1 (make-array length)
                  (loop for index below length
                        do (setf (aref it index) sum)
-                          (incf sum (random 1d0)))))))
-   :x-axis (math "t")
-   :y-axis "cumulative sum"))
+                          (incf sum (random 1d0))))))) :x-axis (math "t") :y-axis "cumulative sum"))
 #+END_SRC
 Optional arguments allow you to select the file for saving the result, otherwise a temporary filename is generated.  When working with plots interactively, it is suggested that you use =displaying= and save the result when necessary.
 
