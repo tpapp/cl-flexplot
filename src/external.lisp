@@ -3,13 +3,14 @@
 (in-package #:cl-flexplot)
 
 (defun pgf-bounding-box ()
-  "Unit bounding box for plots.."
+  "Unit bounding box for plots."
   (pgf-reset-bounding-box)
   (pgf-path-frame +unit-frame+)
   (pgf-use-as-bounding-box))
 
 (defmacro with-flexplot-output ((filespec &key (if-exists :supersede))
                                 &body body)
+  "Write output to FILESPEC."
   `(with-latex-output (,filespec :if-exists ,if-exists)
      ,@body
      (pgf-bounding-box)))
@@ -34,10 +35,14 @@
 \\includeflexplot{~A}{~A}{~A}
 \\end{preview}
 \\end{document}
-")
+"
+  "Format control string for including a flexplot.  Will take width, height
+and filename.")
 
-(defparameter *latex-width* "12cm")
-(defparameter *latex-height* "8cm")
+(defparameter *latex-width* "12cm"
+  "Default height for rendering displayed previews.")
+(defparameter *latex-height* "8cm"
+  "Default width for rendering displayed previews.")
 
 (defun write-latex-wrapper (wrapper-filespec flexplot-namestring
                             &key (header *latex-header*)
@@ -46,7 +51,8 @@
                                  (if-exists :supersede)
                                  (width *latex-width*)
                                  (height *latex-height*))
-  "Write a LaTeX wrapper file."
+  "Write a LaTeX wrapper file to WRAPPER-FILESPEC that can be used to preview
+a flexplot, which is in the file designated by FLEXPLOT-NAMESTRING."
   (with-output-to-file (stream wrapper-filespec :if-exists if-exists)
     (let+ (((&flet w (string)
               (write-sequence string stream))))
@@ -57,7 +63,7 @@
 (define-condition latex-error (error)
   ((code :initarg :code)
    (log :initarg :log))
-  (:documentation ""))
+  (:documentation "Error during latex compilation."))
 
 (defmethod print-object ((latex-error latex-error) stream)
   (print-unreadable-object (latex-error stream :type t)
@@ -88,14 +94,16 @@ the PDF file, otherwise signal an error."
 
 (defun display-pdf (pathname &key (pdf-server "cl-flexplot") (raise? t))
   "Display PDF by calling a PDF viewer."
+  ;; NOTE currently we use XPDF
   (external-program:start "xpdf"
                           (append (list "-remote" pdf-server
                                         (namestring pathname))
                                   (when raise? '("-raise")))))
 
 (defparameter *default-temporary-file* nil
-  "Default file used for rendering plots.  Use DEFAULT-TEMPORARY-FILE to
-access it.")
+  "Default file used for rendering plots.  If unspecified (NIL), the filename
+is generated randomly, otherwise this value is used.  Functions should use the
+function DEFAULT-TEMPORARY-FILE to get a temporary filename.")
 
 (defun generate-temporary-file (&key (prefix "cl-flexplot-")
                                      (directory "/tmp/")
@@ -136,7 +144,8 @@ exist.  If it encounters existing files for MAXIMUM-TRIES, signal an error."
                                         (wrapper '*default-wrapper*)
                                         (raise? t))
                                   &body body)
-  "Similar to WITH-PICTURE, but also displays the resulting PDF."
+  "Redirect the LaTeX/PGF output of the body to PATH (default: a temporary
+file), then compile and display the resulting PDF."
   (once-only (path wrapper)
     (with-unique-names (pdf-path)
       `(progn
@@ -153,5 +162,6 @@ exist.  If it encounters existing files for MAXIMUM-TRIES, signal an error."
 (defun displaying (object &key (path (default-temporary-file))
                                (wrapper *default-wrapper*)
                                (raise? t))
+  "Render OBJECT and display the resulting PDF."
   (with-displayed-picture (:path path :wrapper wrapper :raise? raise?)
     (render +unit-frame+ object)))
