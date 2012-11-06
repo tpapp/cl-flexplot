@@ -3,3 +3,7 @@
 ** The LaTeX package
 
 put in =~/texmf=, using a symlink, TODO explain this
+
+* TODO
+** think about support rendering standalone PDFs
+Currently the flexplot files are the actual output, PDFs are only for previewing.  But maybe the library could have more support for rendering them as a final output.
