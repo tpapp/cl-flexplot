@@ -14,7 +14,7 @@
 
 ** Disadvantages
 
-- LaTeX is necessary for /rendering/ plots --- you can generate plot files without LaTeX, but you won't be able to render or view them.  This may be inconvenient for some people because (1) they don't have LaTeX installed, (2) LaTeX compilation takes extra time.
+- LaTeX is necessary for /rendering/ plots --- you can generate flexplot files without LaTeX, but you won't be able to render or view them.  This may be inconvenient for some people because (1) they don't have LaTeX installed, (2) LaTeX compilation takes extra time.
 
   In practice, LaTeX should not be very difficult to obtain (see eg [[http://www.tug.org/texlive/][TeX Live]], which has everything you need for the purposes of this library) and compiling time is trivial on a modern computer.
 
@@ -67,8 +67,8 @@ Use =displaying= to display plot objects:
                  (loop for index below length
                        do (setf (aref it index) sum)
                           (incf sum (random 1d0)))))))
-  :x-axis (math "t")
-  :y-axis "cumulative sum"))
+   :x-axis (math "t")
+   :y-axis "cumulative sum"))
 #+END_SRC
 Optional arguments allow you to select the file for saving the result, otherwise a temporary filename is generated.  When working with plots interactively, it is suggested that you use =displaying= and save the result when necessary.
 
@@ -82,7 +82,12 @@ Please use the [[https://github.com/tpapp/cl-flexplot/issues][issue tracker]] on
 
 For more general discussion, I usually read the =lisp-stat= Google group.
 
-* TODO
+* To-do list
 ** Think about support rendering standalone PDFs
 Currently the flexplot files are the actual output, PDFs are only for previewing.  But maybe the library could have more support for rendering them as a final output.
 ** More documentation
+- Explanation of design choices behing the DSL.
+- Plot objects.
+- Customizing plots.
+- Styles.
+** Redo style DSL.
