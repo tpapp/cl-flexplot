@@ -57,7 +57,7 @@ will save the result in =/tmp/my-first-plot.flexplot=.
 ** Previewing plots
 
 Use =displaying= to display plot objects:
-#+BEGIN_SRC lisp
+#+BEGIN_SRC common-lisp
 (displaying
  ;; cumulative sum of random numbers, series plot
  (plot
