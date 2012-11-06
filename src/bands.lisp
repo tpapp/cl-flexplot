@@ -18,6 +18,6 @@
            ((&flet pp (accessor)
               (project (point (funcall accessor horizontal-interval)
                               (funcall accessor vertical-interval))))))
+      (pgf-path-rectangle (pp #'left) (pp #'right))
       (pgf-set-fill-style fill-style)
-      (pgf-rectangle (pp #'left) (pp #'right))
       (pgf-fill))))

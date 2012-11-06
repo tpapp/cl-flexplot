@@ -2,12 +2,53 @@
 
 (in-package #:cl-flexplot)
 
-;;; PGF operations
-;;;
-;;; Functions starting with PGF- all emit LaTeX code which is processed by
-;;; PGF.  Some of these functions correspond to PGF primitives, while others
-;;; are convenience functions.  Nevertheless, a function should start with
-;;; PGF- if and only if it emits LaTeX code for PGF.
+;;; All commands that emit PGF (LaTeX) code start with PGF-.  The preferred
+;;; interface or defining them is DEFINE-PGF-COMMAND, and the definitions are
+;;; all in this file.
+
+(defmacro define-pgf-command (name (&rest arguments) &body body)
+  "This function defines a PGF primitive command.
+
+NAME is (lisp-name latex-name), PGF- and pgf are prepended to each,
+respectively.  LISP-NAME and (LISP-NAME) generate the function name from
+LISP-NAME by stripping dashes and converting to lowercase.
+
+ARGUMENTS are arguments of the lisp function.
+
+If BODY starts with a keyword (after the docstring), it is used to generate
+the body of the function.  The following are recognized:
+
+  :ARGUMENTS just emits the arguments.
+
+  :ARGUMENTS* is the same as :ARGUMENTS, "
+  (let+ (((function-name
+           &optional (command-name
+                      (remove #\-
+                              (format nil "~(~A~)" function-name))))
+          (ensure-list name))
+         ((&values remaining-forms declarations doc-string)
+          (if (and (stringp (car body)) (not (cdr body)))
+              (values nil nil (car body))
+              (parse-body body :documentation t)))
+         (body (append declarations remaining-forms))
+         ((&flet default-body (arguments &optional optional?)
+            `((,(if optional?
+                    'latex-command*
+                    'latex-command)
+               ,(format nil "pgf~A" command-name) ,@arguments)))))
+    `(defun ,(symbolicate '#:pgf- function-name) ,arguments
+       ,@(splice-when doc-string doc-string)
+       ,@(ematch body
+           ((cons :arguments rest) (default-body rest))
+           ((cons :arguments* rest) (default-body rest t))
+           ((cons :append-arguments rest) (default-body (append arguments rest)))
+           ((list :color) (with-gensyms (red green blue)
+                            `((let+ (((&rgb ,red ,green ,blue)
+                                      (as-rgb ,(car arguments))))
+                                ,@(default-body (list* red green blue
+                                                       (cdr arguments)))))))
+           (nil (default-body arguments))
+           (_ body)))))
 
 (defun pgf-text-align-string (align)
   "Return a string for valid text alignment options."
@@ -26,47 +67,34 @@
     (:bottom-left "top,right")
     (:bottom-right "top,left")))
 
-(defun pgf-text (position text &key align rotate)
-  (latex-command* "pgftext"
-                  (latex-cat "at=" position
-                             (when rotate
-                               (latex-cat ",rotate=" rotate))
-                             (when align
-                               (let ((align-string (pgf-text-align-string align)))
-                                 (latex-cat "," align-string))))
-                  text))
+(define-pgf-command text (position text &key align rotate)
+  :arguments*
+  (latex-cat "at=" position
+             (when rotate
+               (latex-cat ",rotate=" rotate))
+             (when align
+               (let ((align-string (pgf-text-align-string align)))
+                 (latex-cat "," align-string))))
+  text)
 
-(defun pgf-path-move-to (position)
-  (latex-command "pgfpathmoveto" position))
+(define-pgf-command path-move-to (position))
 
-(defun pgf-path-line-to (position)
-  (latex-command "pgfpathlineto" position))
+(define-pgf-command path-line-to (position))
 
-(defun pgf-rectangle (corner1 corner2)
-  (latex-command "pgfpathrectanglecorners" corner1 corner2))
+(define-pgf-command (path-rectangle "pathrectanglecorners") (corner1 corner2))
 
-(defun pgf-path-circle (center radius)
-  (latex-command "pgfpathcircle" center (latex-pt radius)))
+(define-pgf-command path-circle (center radius)
+  :arguments center (latex-pt radius))
 
-(defun pgf-stroke ()
-  (latex-command "pgfusepath" "stroke"))
+(define-pgf-command (set-color "sys@color@rgb") (color) :color)
 
-(defun pgf-set-color (color)
-  (let+ (((&rgb red green blue) (as-rgb color)))
-    (latex-command "pgfsys@color@rgb" red green blue)))
+(define-pgf-command (set-fill-color "sys@color@rgb@fill") (color) :color)
 
-(defun pgf-set-fill-color (color)
-  (let+ (((&rgb red green blue) (as-rgb color)))
-    (latex-command "pgfsys@color@rgb@fill" red green blue)))
+(define-pgf-command (set-stroke-color "sys@color@rgb@stroke") (color) :color)
 
-(defun pgf-set-stroke-color (color)
-  (let+ (((&rgb red green blue) (as-rgb color)))
-    (latex-command "pgfsys@color@rgb@stroke" red green blue)))
+(define-pgf-command set-line-width (width) :arguments (latex-pt width))
 
-(defun pgf-set-line-width (width)
-  (latex-command "pgfsetlinewidth" (latex-pt width)))
-
-(defun pgf-set-dash (dimensions &optional (phase 0))
+(define-pgf-command set-dash (dimensions &optional (phase 0))
   (assert (divides? (length dimensions) 2) ()
           "Dash dimensions need to have an even length.")
   (latex-command "pgfsetdash"
@@ -74,29 +102,19 @@
                        do (latex-cat "{" dimension "}"))
                  phase))
 
-(defun pgf-fill ()
-  (latex-command "pgfusepath" "fill"))
+(define-pgf-command use-path (&key fill stroke clip)
+  :arguments (latex-comma-separated
+              (when fill "fill")
+              (when stroke "stroke")
+              (when clip "clip")))
 
-(defun print-comma-separated (stream &rest strings)
-  (let ((first t))
-    (loop for string in strings
-          do (when string
-               (if first
-                   (setf first nil)
-                   (princ #\, stream))
-               (princ string stream)))))
+(define-pgf-command stroke () (pgf-use-path :stroke t))
 
-(defun pgf-use-path (&key fill stroke clip)
-  (latex-command "pgfusepath"
-                 (latex-comma-separated
-                  (when fill "fill")
-                  (when stroke "stroke")
-                  (when clip "clip"))))
+(define-pgf-command fill () (pgf-use-path :fill t))
 
-(defun pgf-reset-bounding-box ()
-  (latex-command "pgfresetboundingbox"))
+(define-pgf-command reset-bounding-box ())
 
-(defun pgf-use-as-bounding-box ()
+(define-pgf-command use-as-bounding-box ()
   (latex-command "pgfusepath" "use as bounding box"))
 
 (defmacro pgf-scope (&body body)
@@ -104,7 +122,7 @@
 
 ;;; convenience functions
 
-(defun pgf-lines (points)
+(define-pgf-command lines (points)
   "Stroke consecutive points.  NIL breaks the line."
   (let+ (open?
          ((&flet ensure-closed ()

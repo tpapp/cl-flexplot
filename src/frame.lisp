@@ -65,7 +65,7 @@
 
 (defun pgf-frame-rectangle (frame)
   (let+ (((&frame-r/o left right bottom top) frame))
-    (pgf-rectangle (point left bottom) (point right top))))
+    (pgf-path-rectangle (point left bottom) (point right top))))
 
 (defun split (frame h-divisions v-divisions)
     "Split FRAME into a grid defined by the division sequences (see

@@ -9,7 +9,8 @@
                #:external-program
                #:fare-mop
                #:iterate
-               #:let-plus)
+               #:let-plus
+               #:optima)
   :serial t
   :components
   ((:module "package"
