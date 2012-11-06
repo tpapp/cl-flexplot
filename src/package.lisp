@@ -58,6 +58,6 @@
    #:q5-x)
   (:export
    :strut
-   :square-bounding-box
    :make-bounding-box
-   :title))
+   :title
+   #:square-bounding-box))
