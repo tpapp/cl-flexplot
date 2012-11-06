@@ -285,3 +285,11 @@
                 (mark (point 1 1) (circle :size 7 :stroke nil
                                           :fill (fill-style :color +blue+)))
                 (mark (point 0.5 0.5) (label "label")))))
+
+;;; rendering directly to a file
+
+(render #P"/tmp/my-first-plot.flexplot"
+        (plot
+         (list
+          (horizontal-guide 0)
+          (lines (fx #'sin (interval (- pi) pi))))))
