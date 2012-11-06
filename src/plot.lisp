@@ -20,13 +20,15 @@
    (x-axis :accessor x-axis :initarg :x-axis)
    (y-axis :accessor y-axis :initarg :y-axis)
    (x-other-axis :accessor x-other-axis :initarg :x-other-axis)
-   (y-other-axis :accessor y-other-axis :initarg :y-other-axis)))
+   (y-other-axis :accessor y-other-axis :initarg :y-other-axis))
+  (:documentation "Simple 2d plot.  See the function PLOT."))
 
 (defun plot (objects
              &key (x-axis (axis (math "x")))
                   (y-axis (axis (math "y")))
                   (x-other-axis (transformation :ticks :marks-only))
                   (y-other-axis (transformation :ticks :marks-only)))
+  "Create a simple plot with a horizontal and a vertical axis."
   (let ((bounding-box (bounding-box objects)))
     (check-type bounding-box nonempty-bounding-box)
     (make-instance
