@@ -1,9 +1,4 @@
-
-========
------
-This is a pre-alpha release.  Bug reports and suggestions are welcome, but support is very limited.  The API may experience large changes.
------
---------------
+| This is a pre-alpha release.  Bug reports and suggestions are welcome, but support is very limited.  The API may experience large changes. |
 
 * Introduction
 
