@@ -27,11 +27,12 @@ using the given orientation.")
           :key (curry #'margin orientation)))
 
 (defgeneric render-with-orientation (orientation frame object)
-  (:documentation "FIXME"))
+  (:documentation "Render OBJECT in FRAME with the given ORIENTATION."))
 
 (defun side (orientation frame replacement-frame object)
-  "Split off a margin, transform it using replacement-frame, render the object
-in it, and return the remaining frame."
+  "Split off a margin (at the side specified by ORIENTATION), transform it
+using replacement-frame, render the object in it (with the given orientation),
+and return the remaining frame."
   (let+ (((&values side remainder) (split2 frame orientation
                                            (margin orientation object))))
     (render-with-orientation orientation
