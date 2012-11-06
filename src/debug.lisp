@@ -20,7 +20,7 @@ one visually."
   (:documentation "Tint object (usually a frame or a collection of frames)
   with a random color.  Return the original object.  Useful for debugging.")
   (:method ((frame frame))
-    (pgf-frame-rectangle frame)
+    (pgf-path-frame frame)
     (pgf-set-fill-color (random-color))
     (pgf-fill)
     frame)

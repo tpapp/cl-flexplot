@@ -203,7 +203,7 @@ rest."))
   "Draw the rectangle that scales lie on."
   (pgf-set-line-width *scale-line-width*)
   (pgf-set-stroke-color +black+)
-  (pgf-frame-rectangle frame)
+  (pgf-path-frame frame)
   (pgf-stroke))
 
 (defgeneric generate-ticks (marks-number axis interval)

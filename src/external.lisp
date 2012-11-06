@@ -5,7 +5,7 @@
 (defun pgf-bounding-box ()
   "Unit bounding box for plots.."
   (pgf-reset-bounding-box)
-  (pgf-frame-rectangle +unit-frame+)
+  (pgf-path-frame +unit-frame+)
   (pgf-use-as-bounding-box))
 
 (defmacro with-flexplot-output ((filespec &key (if-exists :supersede))

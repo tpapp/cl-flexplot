@@ -2,21 +2,27 @@
 
 (in-package #:cl-flexplot)
 
-;;; coordinate interval splitting
+;;; DSL for coordinate interval splitting
 
 (defstruct (flex-spacer
-            (:constructor flex-spacer (&optional (coordinate +flex-unit+))))
-  (coordinate nil :type coordinate))
+            (:constructor flex-spacer (&optional (weight +flex-unit+))))
+  "A spacers will the available space, which is divided proportionally to
+their weights."
+  (weight nil :type coordinate))
 
 (defun split-flex-interval (lower upper divisions)
+  "Split the section between LOWER and UPPER into the specified divisions.  A
+division is either a COORDINATE or a FLEX-SPACER: coordinates are used as is,
+and the remaining section is divided between the spacers according to their
+weight.  Return a vector of lists of 2 elements (the division endpoints)."
   (let+ ((spacer +flex-zero+)
          (non-spacer +flex-zero+))
     (map 'nil
          (lambda (division)
            (atypecase division
              (flex-spacer
-              (setf spacer (flex+ spacer (flex-spacer-coordinate it))))
-             (t
+              (setf spacer (flex+ spacer (flex-spacer-weight it))))
+             (coordinate
               (setf non-spacer (flex+ non-spacer it)))))
          divisions)
     (let* ((remaining (flex- upper lower non-spacer))
@@ -33,14 +39,16 @@
                       (atypecase division
                         (flex-spacer
                          (flex-apply #'* spacer-scale
-                                     (flex-spacer-coordinate it)))
-                        (t it)))
+                                     (flex-spacer-weight it)))
+                        (coordinate it)))
                     (upper (flex+ lower division)))
                (aprog1 (list lower upper)
                  (setf lower upper))))
            divisions))))
 
 (defun shrink-flex-interval (lower upper lower-padding upper-padding)
+  "Shrink the section between LOWER and UPPER given the specified paddings.
+Return the list of the two endpoints."
   (aref
    (split-flex-interval lower upper
                         (list lower-padding
@@ -48,22 +56,25 @@
                               upper-padding))
    1))
 
-;;;
+;;; frames
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defstruct (frame
               (:constructor frame (left right bottom top)))
+    "A frame corresponds to a rectangular area."
     (left nil :type coordinate)
     (right nil :type coordinate)
     (bottom nil :type coordinate)
     (top nil :type coordinate)))
 
 (define-constant +unit-frame+ (frame 0 1 0 1)
-  :test #'equalp)
+  :test #'equalp
+  :documentation "The unit frame, corresponds to the initial canvas.")
 
 (define-structure-let+ (frame) left right bottom top)
 
-(defun pgf-frame-rectangle (frame)
+(defun pgf-path-frame (frame)
+  "PGF path for the rectangle of the frame."
   (let+ (((&frame-r/o left right bottom top) frame))
     (pgf-path-rectangle (point left bottom) (point right top))))
 
@@ -147,6 +158,8 @@ the rest from FRAME."
       frame))
 
 (defun replace-with-orientation (orientation frame replacement-frame)
+  "Replace the coordinates of frame specified by ORIENTATION.  See REPLACE-H
+and REPLACE-V."
   (if (o-horizontal? orientation)
       (replace-h frame replacement-frame)
       (replace-v frame replacement-frame)))
@@ -154,7 +167,8 @@ the rest from FRAME."
 
 
 (defgeneric project (mapping point)
-  (:documentation "Project POINT using MAPPING."))
+  (:documentation "Project POINT using MAPPING.  See FLEX-PROJECT for
+  explanation of the coordinate-wise semantics."))
 
 (defmethod project ((frame frame) (point point))
   (let+ (((&frame-r/o left right bottom top) frame)
@@ -172,6 +186,6 @@ PGF commands using the PGF- functions.")
 (defmacro with-clip-to-frame (frame &body body)
   "Clip to the rectangle of FRAME."
   `(pgf-scope
-     (pgf-frame-rectangle ,frame)
+     (pgf-path-frame ,frame)
      (pgf-use-path :clip t)
      ,@body))
