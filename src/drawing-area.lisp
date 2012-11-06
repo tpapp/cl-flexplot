@@ -9,13 +9,12 @@
 (defgeneric domain (mapping)
   (:documentation "Return the domain of MAPPING."))
 
-;; (defgeneric projection (mapping object)
-;;   (:documentation "Return function that performs the projection."))
-
 ;;; coordinate projections
 
 (defgeneric make-coordinate-projection (domain kind)
-  (:documentation "FIXME"))
+  (:documentation "Make a coordinate projection from DOMAIN (to the unit
+  frame, see FLEX-PROJECT and PROJECT).  KIND determines the details of the
+  mapping (eg :LINEAR)"))
 
 ;;; linear coordinate projection
 
@@ -33,8 +32,8 @@
                             :coefficient coefficient
                             :domain domain)))
 
-(defmethod make-coordinate-projection ((domain finite-interval) kind)
-  (declare (ignore kind))
+(defmethod make-coordinate-projection ((domain finite-interval)
+                                       (kind (eql :linear)))
   (linear-projection domain))
 
 (defmethod project ((projection linear-projection) coordinate)
@@ -51,6 +50,8 @@
 (defstruct (drawing-area
             (:constructor make-drawing-area
                 (frame x-projection y-projection)))
+  "A drawing area is a frame equipped with two projections, for the two
+coordinates."
   (frame nil :type frame :read-only t)
   (x-projection nil :read-only t)
   (y-projection nil :read-only t))
@@ -74,10 +75,12 @@
               (project ,mapping point)))
       ,@body)))
 
+;;; origin drawing area, for implementing marks
+
 (defstruct origin-drawing-area
   "Used for mapping absolute coordinates around some point in another drawing
-  area.  PROJECT takes a POINT containing real numbers and uses them to
-  translate around the original coordinates."
+area.  PROJECT takes a POINT containing real numbers and uses them to
+translate around the original coordinates."
   (frame nil :type frame :read-only t)
   (x nil :type coordinate :read-only t)
   (y nil :type coordinate :read-only t))
@@ -103,7 +106,14 @@ contained absolute coordinates."
                              &key use-for-bounding-box)
                             &body body)
   "Define RENDER (and optionally EXTEND-BOUNDING-BOX) expansions for objects
-which are composed of primitives that are returned by BODY."
+which are composed of primitives that are returned by BODY.
+
+Note: objects can be specified in terms of other objects, in which case it is
+not necessary to implement EXTEND-BOUNDING-BOX and RENDER separately, they are
+just called with the given objects.  This macro should be used when the
+semantics of the object elements as a whole should be preserved, otherwise
+object creating functions could just return a sequence of the elements that
+make up the object."
   (let+ (((instance &optional (class instance)) (ensure-list instance-and-class)))
     `(progn
        (defmethod render ((,drawing-area drawing-area) (,instance ,class))
