@@ -1,6 +1,10 @@
 ;;;; cl-flexplot.asd
 
 (asdf:defsystem #:cl-flexplot
+  :description "A plotting library for Common Lisp, using PGF (LaTeX) as a backend."
+  ;; :version "pre-alpha"
+  :author "Tamas K Papp <tkpapp@gmail.com>"
+  :license "Boost Software License - Version 1.0"
   :depends-on (#:alexandria
                #:anaphora
                #:cl-colors
