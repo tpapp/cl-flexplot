@@ -3,8 +3,9 @@
 (in-package #:cl-flexplot)
 
 ;;; All commands that emit PGF (LaTeX) code start with PGF-.  The preferred
-;;; interface or defining them is DEFINE-PGF-COMMAND, and the definitions are
-;;; all in this file.
+;;; interface or defining them is DEFINE-PGF-COMMAND.  Some of the definitions
+;;; are in this file, but if other functions build on these they should start
+;;; with pgf.
 
 (defmacro define-pgf-command (name (&rest arguments) &body body)
   "This function defines a PGF primitive command.
