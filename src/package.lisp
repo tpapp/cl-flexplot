@@ -61,4 +61,7 @@
    :make-bounding-box
    :title
    #:square-bounding-box
-   #:+origin+))
+   #:+origin+
+   #:*stroke-style*
+   #:*fill-style*
+   #:*guide-style*))
