@@ -1,6 +1,6 @@
 #!/bin/sh
-TEXMFHOME=`kpsewhich -var-value TEXMFHOME`
-TARGET=./latex/flexplot.sty
+TEXMFHOME=`kpsewhich -var-value TEXMFHOME`/tex/latex/
+TARGET=`pwd`/latex/flexplot.sty
 echo "Creating a symlink to $TARGET in $TEXMFHOME"
 ln -i -s $TARGET -t $TEXMFHOME
 echo "Running mktexlsr"
