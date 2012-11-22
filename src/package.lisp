@@ -60,4 +60,5 @@
    :strut
    :make-bounding-box
    :title
-   #:square-bounding-box))
+   #:square-bounding-box
+   #:+origin+))
