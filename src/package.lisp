@@ -64,4 +64,8 @@
    #:+origin+
    #:*stroke-style*
    #:*fill-style*
-   #:*guide-style*))
+   #:*guide-style*
+   #:vertical-guide
+   #:diagonal-guide
+   #:horizontal-guide
+   #:categories-guides))
