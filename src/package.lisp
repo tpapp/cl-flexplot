@@ -68,4 +68,7 @@
    #:vertical-guide
    #:diagonal-guide
    #:horizontal-guide
-   #:categories-guides))
+   #:categories-guides
+   #:strut-y
+   #:strut-x
+   #:qy))

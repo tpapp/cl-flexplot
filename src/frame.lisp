@@ -168,7 +168,10 @@ and REPLACE-V."
 
 (defgeneric project (mapping point)
   (:documentation "Project POINT using MAPPING.  See FLEX-PROJECT for
-  explanation of the coordinate-wise semantics."))
+  explanation of the coordinate-wise semantics.")
+  (:argument-precedence-order point mapping)
+  (:method (mapping (point null))
+    nil))
 
 (defmethod project ((frame frame) (point point))
   (let+ (((&frame-r/o left right bottom top) frame)

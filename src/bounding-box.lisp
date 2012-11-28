@@ -94,3 +94,11 @@ are not rendered."
 (defun strut (&rest objects)
   "Create a STRUT with the bounding box of OBJECTS."
   (make-strut% :bounding-box (bounding-box objects)))
+
+(defun strut-x (&rest coordinates)
+  (make-strut% :bounding-box (make-bounding-box :x (interval-hull coordinates)
+                                                :y nil)))
+
+(defun strut-y (&rest coordinates)
+  (make-strut% :bounding-box (make-bounding-box :x nil
+                                                :y (interval-hull coordinates))))
