@@ -71,4 +71,6 @@
    #:categories-guides
    #:strut-y
    #:strut-x
-   #:qy))
+   #:qy
+   #:*band-style*
+   #:vertical-band))
