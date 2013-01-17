@@ -87,11 +87,11 @@ the body of the function.  The following are recognized:
 (define-pgf-command path-circle (center radius)
   :arguments center (latex-pt radius))
 
-(define-pgf-command (set-color "sys@color@rgb") (color) :color)
+(define-pgf-command (set-color "flexrgb") (color) :color)
 
-(define-pgf-command (set-fill-color "sys@color@rgb@fill") (color) :color)
+(define-pgf-command (set-fill-color "flexrgbfill") (color) :color)
 
-(define-pgf-command (set-stroke-color "sys@color@rgb@stroke") (color) :color)
+(define-pgf-command (set-stroke-color "flexrgbstroke") (color) :color)
 
 (define-pgf-command set-line-width (width) :arguments (latex-pt width))
 

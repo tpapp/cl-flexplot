@@ -6,9 +6,8 @@
 
 \newcommand{\flexaxisannotation}[1]{$#1$}
 
-\newcommand{\includeflexplot}[3]{%
-{%
-\newcommand{\ax}{#1}%
+\newcommand{\flexpicture}[3]%
+{{\newcommand{\ax}{#1}%
 \newcommand{\ay}{#2}%
 \newcommand{\rc}[2]{\pgfpointadd%
   {\pgfpointscale{##1}{\pgfpoint{\ax}{0}}}%
@@ -16,8 +15,11 @@
 \newcommand{\ptc}[2]{\pgfpoint{##1pt}{##2pt}}%
 \newcommand{\emc}[2]{\pgfpoint{##1em}{##2em}}%
 \newcommand{\cc}[6]{\pgfpointadd{\pgfpointadd{\rc{##1}{##4}}{\ptc{##2}{##5}}}{\emc{##3}{##6}}}%
+\newcommand{\pgfflexrgb}[3]{\pgfsys@color@rgb{##1}{##2}{##3}}
+\newcommand{\pgfflexrgbstroke}[3]{\pgfsys@color@rgb@stroke{##1}{##2}{##3}}
+\newcommand{\pgfflexrgbfill}[3]{\pgfsys@color@rgb@fill{##1}{##2}{##3}}
 \begin{pgfpicture}%
-\makeatletter%
-\input{#3}%
-\makeatother%
+#3
 \end{pgfpicture}}}
+
+\newcommand{\includeflexplot}[3]{\flexpicture{#1}{#2}{\input{#3}}}
