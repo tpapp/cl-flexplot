@@ -49,4 +49,5 @@
    (:module "misc"
     :pathname #P"src/"
     :serial t
-    :components ((:file "debug")))))
+    :components ((:file "debug")
+                 (:file "swatch")))))

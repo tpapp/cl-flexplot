@@ -73,4 +73,5 @@
    #:strut-x
    #:qy
    #:*band-style*
-   #:vertical-band))
+   #:vertical-band
+   #:write-swatches))
