@@ -146,6 +146,19 @@ NILs."
                    (latex-format #\,))
                (latex-print argument)))))
 
+(defmacro latex-newcommand (command (n-arguments &optional (default nil default?))
+                            &body body)
+  "Emit a \\newcommand, defining command (a string, backslash will be prepended) with the given number of arguments (and a default when given).  BODY is executed for emitting the definition."
+  `(with-latex-nesting
+     (latex-indent)
+     (latex-command "newcommand")
+     (latex-command-arguments (latex-command ,command))
+     ,(latex-argument-form n-arguments t)
+     ,(when default?
+        (latex-argument-form default t))
+     (latex-command-arguments (progn ,@body))
+     (latex-newline)))
+
 (defmacro with-latex-environment (environment &body body)
   "Wrap BODY in the given LaTeX ENVIRONMENT (should be a string)."
   (check-type environment string)
