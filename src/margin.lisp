@@ -23,7 +23,7 @@ using the given orientation.")
   "Largest margin among objects."
   (reduce #'flex-max (aetypecase objects
                        (sequence it)
-                       (array (flatten-array it)))
+                       (array (ao:flatten it)))
           :key (curry #'margin orientation)))
 
 (defgeneric render-with-orientation (orientation frame object)

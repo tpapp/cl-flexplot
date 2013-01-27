@@ -7,6 +7,7 @@
   :license "Boost Software License - Version 1.0"
   :depends-on (#:alexandria
                #:anaphora
+               #:array-operations
                #:cl-colors
                #:cl-fad
                #:cl-num-utils
