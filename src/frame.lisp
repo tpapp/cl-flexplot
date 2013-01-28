@@ -79,13 +79,13 @@ Return the list of the two endpoints."
     (pgf-path-rectangle (point left bottom) (point right top))))
 
 (defun split (frame h-divisions v-divisions)
-    "Split FRAME into a grid defined by the division sequences (see
+  "Split FRAME into a grid defined by the division sequences (see
 SPLIT-FLEX-INTERVAL for semantics), returning a matrix."
   (let+ (((&frame-r/o left right bottom top) frame))
-    (outer* (split-flex-interval left right h-divisions)
-            (split-flex-interval bottom top v-divisions)
-            (lambda+ ((left right) (bottom top))
-              (frame left right bottom top)))))
+    (aops:outer (lambda+ ((left right) (bottom top))
+                  (frame left right bottom top))
+                (split-flex-interval left right h-divisions)
+                (split-flex-interval bottom top v-divisions))))
 
 (defun split5 (frame left bottom &optional (right left) (top bottom))
   "Split FRAME into a center and the four adjacent regions.  Useful for plots
