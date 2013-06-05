@@ -74,4 +74,5 @@
    #:qy
    #:*band-style*
    #:vertical-band
-   #:write-swatches))
+   #:write-swatches
+   #:ty))
