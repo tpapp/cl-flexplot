@@ -168,11 +168,11 @@
 (require :cl-random)
 
 ;;; QQ plot
-(let* ((y (generate-array 500 (lambda () (+ (random 1d0) (random 1d0))))))
+(let* ((y (aops:generate (lambda () (+ (random 1d0) (random 1d0))) 500)))
   (displaying (plot
                (list
                 (diagonal-guide)
-                (qy y :function (curry #'quantile (rv:r-normal (mean y) (variance y)))))
+                (qy y :function (curry #'rv:quantile (rv:r-normal (mean y) (variance y)))))
                :x-axis "equivalent normal"
                :y-axis "quantile")))
 
