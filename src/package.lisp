@@ -83,4 +83,5 @@
    #:*band-style*
    #:vertical-band
    #:write-swatches
-   #:ty))
+   #:ty
+   #:render))
