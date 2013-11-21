@@ -21,11 +21,8 @@
                                    :if-does-not-exist :create)
      ,@body))
 
-
 (defun latex-format (control-string &rest arguments)
   (apply #'format *latex-output* control-string arguments))
-
-
 
 (defvar *latex-pretty* t
   "When not NIL, whitespace (newlines, indentation, ...) is added to LaTeX
@@ -35,6 +32,10 @@ code in order to aid debugging it directly.")
   "Level of nesting within LaTeX commands.  When *LATEX-PRETTY*, the first
   level is separated by newlines.")
 
+(defvar *latex-force-newline-level* 3
+  "When nesting is above or equal to this level, always write a newline.")
+;;; NOTE This mechanism is not the most satisfactory.  The problem is that (La)TeX may not be able to read very lone lines, and they must be broken at some level.  Could check for line length directly and break above a threshold, but that would be independent of the semantics.  Use the CL pretty printer?  There is a nasty thought.
+
 (defmacro with-latex-nesting (&body body)
   "Increase the level of nesting."
   `(let ((*latex-nesting* (1+ *latex-nesting*)))
@@ -43,7 +44,7 @@ code in order to aid debugging it directly.")
 (defun latex-newline ()
   "Newline for the top level of nesting."
   (when *latex-pretty*
-    (unless (plusp *latex-nesting*)
+    (unless (<= *latex-force-newline-level* *latex-nesting*)
       (terpri *latex-output*))))
 
 (defvar *latex-indent* 0
