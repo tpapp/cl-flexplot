@@ -293,3 +293,10 @@
          (list
           (horizontal-guide 0)
           (lines (fx #'sin (interval (- pi) pi))))))
+
+;;; transparency
+
+(displaying
+ (let ((stroke (stroke-style :color +red+ :opacity 0.5 :width 10)))
+   (plot (list (segment (point 0 0) (point 1 1) stroke)
+               (segment (point 0 1) (point 1 0) stroke)))))

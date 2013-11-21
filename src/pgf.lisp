@@ -103,6 +103,10 @@ the body of the function.  The following are recognized:
                        do (latex-cat "{" dimension "}"))
                  phase))
 
+(define-pgf-command set-stroke-opacity (value)
+  (check-type value (real 0 1))
+  (latex-command "pgfsetstrokeopacity" value))
+
 (define-pgf-command use-path (&key fill stroke clip)
   :arguments (latex-comma-separated
               (when fill "fill")
