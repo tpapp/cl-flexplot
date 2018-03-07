@@ -1,4 +1,4 @@
-*IMPORTANT* This library is [[https://tpapp.github.io/post/orphaned-lisp-libraries/][abandonned].
+*IMPORTANT* This library is [[https://tpapp.github.io/post/orphaned-lisp-libraries/][abandonned]].
 
 | This is a pre-alpha release.  Bug reports and suggestions are welcome, but support is very limited.  The API may experience large changes. |
 
